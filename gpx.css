@@ -1,0 +1,272 @@
+.wp_panel
+{
+position1: absolute;
+font-size: 10px;
+}
+
+.hide 
+{
+ display: none;
+}
+
+body
+{
+    font-family: Tahoma;
+}
+
+div.bselect 
+{
+    font-size:14px;
+    color:black;
+    background-color: #fff;
+    border: 0px solid black;
+    opacity:1;
+    z-index:100;
+    }
+
+.bselect br,
+.bselect .color,
+.bselect .lat,
+.bselect .lng,
+.bselect .time,
+.bselect .color,
+.bselect .idx 
+{
+   display: inline;
+} 
+
+br, .color, .lat, .lng, .time, .color, .idx 
+{
+    display: none;
+} 
+
+
+.baloon, .baloon input
+{
+    font-size: 8px;
+    color:gray;
+    opacity:.7;
+    max-width:70px;
+    padding:2px;
+    }
+
+.tab {border-collapse:collapse;}
+
+#gps_xml {font-size: 9px; width:400px; height: 100px;}
+
+/* table styles */
+
+.tab tr:nth-child(even){background-color:#eef0ee;}
+.tab td {border:1px solid #fefefe; font-size: 11px;}
+.header td {font-weight:bold;}
+
+td[contenteditable] {background-color:#eeffee;}
+td.geocoded {background-color:#ffee00;}
+
+.rowselect {
+            background-color:#aaf0aa !important;
+            } 
+.modified_geo {background-color:#ffeeee;}
+.rowdel {background-color:#ff4400;}
+
+#container{
+    width: 100%; 
+}
+/*<!-- Left -->*/
+ 
+#map_container1 {position1: fixed;
+               float:left;  
+               display:block;  
+               top:0px;
+               padding:2px 2px 2px 2px; 
+               left:0px;
+               width:calc(100% - 650px);
+               height:calc(100% - 150px);
+               border:1px solid gray;
+               }
+
+
+#table_container1 {position1: absolute;
+                  top:0; 
+                  right:0px;
+                  float:left;
+                  margin:0px;
+                  width:500px;
+                  border: 0px solid red;
+                  }
+
+
+#left_panel{
+    width: 600px;
+    height:calc(100% - 150px);
+    overflow:scroll;
+    float: left; 
+    padding: 3px; 
+    background-color1: #FFee88;
+    background-color: #FFF;
+}
+
+
+/* Right -->*/
+
+#right_panel{
+    padding: 3px; 
+    width:calc(100% - 630px);    
+    height:calc(100% - 150px);
+    float: left;
+    background-color1: #9999FF;
+}
+
+.clear{
+    clear:both;
+}
+
+
+#elevation-chart{position: fixed;
+               float:left bottom;  
+               display:block;  
+               bottom:0px;
+               padding:0px 0px 0px 0px; 
+               left:0px;
+               width:calc(100% - 10px);
+               height:150px;
+               border:0px solid green;
+               }
+               
+
+
+.checkbox_field
+{
+    padding: 3px 10px 3px 2px;
+    display: block;
+    background-color:#f4f4f4;
+    font-size:12px;
+    margin:1px;
+}
+
+
+#map {
+        width:100%; 
+        height: calc(100% - 50px);
+      }
+
+
+.button {
+    -webkit-transition-duration: 0.4s; /* Safari */
+    opacity:1;
+    text-align:left;
+    width1:130px;
+    height1: 40px;
+    padding:4px 6px;
+    z-index: 100;
+    background: #fbfbfb;
+    color: #222;
+}
+
+.button.active{
+    background: #aaa;
+}
+
+
+#datasetpanel
+{
+    position: fixed;
+    padding: 0px;
+    top:0px;
+    width:100%;
+    height:0px;
+    right:0px;
+    background: rgba(255,255,255,1);
+}
+
+.datasets
+{
+margin: 0px 0px 0px 150px;
+float:left;    
+}
+
+
+.datasetcheckbox {
+    left1: calc(100% - 650px);
+    width:150px;
+    margin:0px 100px 0px 0px;
+    } 
+
+.buttons_panel { 
+    margin:10px 10px; 
+    z-index:100;
+    background: rgba(255,255,255,0.5);
+    }
+
+button.sign
+{
+    border:0px red solid;
+    background:none;
+    text-decoration:underline;
+}
+
+.button:hover {
+  background-color: #fff; /* Green */
+  color: #000;
+}
+
+
+#save button
+{
+    font-size:16px;
+    border-radius: 3px;
+    border: gray solid 1px;
+}               
+
+
+.button1 {
+  background-color: #4CAF50;
+  border: none;
+  font-size: 28px;
+  color: #FFFFFF;
+  padding: 20px;
+  width: 200px;
+  text-align: center;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+  text-decoration: none;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.button1:after {
+  content: "";
+  background: #f1f1f1;
+  display: block;
+  position: absolute;
+  padding-top: 300%;
+  padding-left: 350%;
+  margin-left: -20px !important;
+  margin-top: -120%;
+  opacity: 0;
+  transition: all 0.8s
+}
+
+.button1:active:after {
+  padding: 0;
+  margin: 0;
+  opacity: 1;
+  transition: 0s
+}
+
+/* Mercator heatmap overlay */
+
+ #floating-panel {
+        position: absolute;
+        margin-top: 10px;
+        margin-left: 100px;
+        width:100px;
+        z-index: 5;
+        background-color: #ffd;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }      

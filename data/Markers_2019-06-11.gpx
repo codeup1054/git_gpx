@@ -1,0 +1,460 @@
+<gpx version="1.1" creator="OsmAnd 3.3.7" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>Markers_2019-06-11</name>
+  </metadata>
+  <wpt lat="55.7962599" lon="37.6780104">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>ЙВП, Сокольники</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7671228" lon="37.6596245">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>ЙВП, Баксанский сад</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7893115" lon="37.6798115">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Велобайк, м. Сокольники</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7539391" lon="37.6345859">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Велобайк, Китай-город</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.8658173" lon="37.573158">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Савеловская,  Дегунино</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.8823825" lon="37.5678998">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Савеловская, Бескудниково</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.8488031" lon="37.5715317">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>МЦК, Окружная</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.8976453" lon="37.5522925">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Савеловская, Лианозово</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.9042061" lon="37.5383747">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Савеловская, Марк</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.924288" lon="37.5280005">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Савеловская, Новодачная, 31.1км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.938996" lon="37.5206227">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Савеловская, Долгопрудный,</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6442983" lon="37.4959946">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>!base home 9k5</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.813694" lon="37.4871368">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>МКЦ Стрешнево,19км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7991954" lon="37.4990149">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>МКЦ, Панфиловская, 17.2</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7774635" lon="37.5072124">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>МКЦ, Хорошово, 14.8км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7573626" lon="37.52565">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>МЦК, Шелепиха, 15.5км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.9526402" lon="37.5123038">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>ст. Водники, Савеловская</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.8136925" lon="37.487137">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>МКЦ Стрешнево, 1км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5414444" lon="37.5702924">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Бутово, Серпуховская, 12 км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.1822538" lon="37.486812">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Чепелево, Серпуховская, 51.5км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.1498865" lon="37.4900832">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Чехов, Серпуховская, 55 км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.3886558" lon="36.9007799">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>240 км, Киевская - Кресты, 47 км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.3413264" lon="36.9390552">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Мачихино, Киевская Кресты, 48км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.4254136" lon="36.8650916">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Бекасово киевский, 46км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="54.9347782" lon="37.4517274">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Серпухов, Киевская, 77км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.1789292" lon="36.6624405">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Балабаново, Киевская,74км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.4942169" lon="36.0327124">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Можайск, Белорусская, 76км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5467934" lon="36.3720457">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Дорохово, Белорусская, 76км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.092178" lon="36.6182229">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Обнинск, Киевская, 83км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6719589" lon="37.2819128">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Одинцово, Белорусская, 13,7км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6612125" lon="37.1836511">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Перхушково, Юдино, Белорусская, 19.6</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6505285" lon="37.1522792">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Здравница,Белорусская, 21.6 км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6824999" lon="37.3147839">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Баковка, Белорусская, 12 км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6419757" lon="37.0975679">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Жаворонки, Белорусская, 25 км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6652698" lon="37.2119436">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Пионерская, Белорусская,</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5792146" lon="36.6906995">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Кубинка-1, Белорусская</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5791367" lon="36.6353148">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Чапаевка, Белорусская,</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.4149482" lon="36.8138324">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Зосимова пустынь, Киевская, 50 км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.3833813" lon="36.7512781">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Наро-Фоминск, Киевская, 55км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.4295368" lon="36.8399594">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Бекасовская, Киевская, 47км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.4807246" lon="36.9176507">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Рассудово, Киевская, 37км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6600794" lon="37.4190259">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>ТНК</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.4580781" lon="36.8873599">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Ожигово, Киевская, 40км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.540493" lon="37.036465">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Дачная, Киевская.</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5168733" lon="36.967908">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Селятино, Киевская, 32км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.4267551" lon="36.8205349">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Бекасово станция</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5971488" lon="36.4690718">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Около улица Партизан, Тучково</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7159412" lon="37.3756538">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Вокзальная улица, Новоивановское</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6968342" lon="37.3375482">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Около Трёхгорная улица, Трёхгорка</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="56.1834959" lon="36.9730496">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Подсолнечная</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5734501" lon="37.3856163">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Зимёнки</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5661526" lon="37.0928907">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Остановка общественного транспорта</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5285941" lon="36.991396">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Алабино, Киевская, 30км</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.5500847" lon="37.066884">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Апрелевка</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.577811" lon="37.1097565">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Крёкшино</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.7272968" lon="36.8618382">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Солнечная улица, Звенигород</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6370483" lon="37.2441891">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Около улица Чехова, Минвнешторга</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6403092" lon="37.28445">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>улица Чапаева, Абабурово</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6302128" lon="37.2179461">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Лесной Городок</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6562873" lon="37.3857637">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Наро-Фоминская улица (Солнцево) 15, Москва</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.8415794" lon="37.1849442">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Нахабино</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6488632" lon="37.2695303">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Внуково</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6667423" lon="37.4249268">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Платформа Сколково</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.6562119" lon="37.3541164">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Переделкино</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+  <wpt lat="55.8137455" lon="37.4751931">
+    <time>2019-06-11T13:47:57Z</time>
+    <name>Покровское Стрешнево, Рижская</name>
+    <extensions>
+      <color>#b4eeee10</color>
+    </extensions>
+  </wpt>
+</gpx>
