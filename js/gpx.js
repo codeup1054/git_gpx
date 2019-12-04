@@ -136,7 +136,7 @@ class _markers {
               text: ((dist+"").length>4)? dist.toFixed(1)+"":dist+"",
               color: '#024',
               fontSize: '9px',
-              fontWeight: 'bold'
+              fontWeight: 'normal'
             }
           });
           

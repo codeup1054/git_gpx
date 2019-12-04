@@ -1,3 +1,5 @@
+var gpx = {};
+
 function makeApiCall(action) {
   
   switch (action)
@@ -93,14 +95,11 @@ function makeApiCall(action) {
 //               console.log("@@@ populateSheet:", sh_res.push(response.result.values)) //,res,v);
 //             setTimeout(function () { // костыль для асинхронной работы     
                 populateSheet(response.result,v);
+                console.log("@@ gpx=",gpx);
 //              },20);
-
-                
               }, function(reason) {
                 console.error('error: ' + reason.result.error.message);
               });        
-            
-            
           });
 /*          
           .promise().done( function(){
@@ -167,7 +166,9 @@ function makeApiCall(action) {
     {   
         var cels = res.values;
 //        console.log("@@@ populateSheet",  v, cels) //,res,v);
-        var row = "";  
+        var row = "";
+        
+        gpx[v]=res.values;
 
         dist_total = 0;
         for (var r=0; r < cels.length; r++)
@@ -176,7 +177,7 @@ function makeApiCall(action) {
             
             pp = (r>1)? cels[r-1].slice(4,6): homeGeo; // если первая считаем расстояние от базы  
             
-//            console.log("@@ pp ", r, v, pp, cels[r])
+            //console.log("@@ pp ", r, v, pp, cels[r])
                  
             dist_next = (cels[r][4] && cels[r][5] )? getDistanceFromLatLonInKm(cels[r][4], cels[r][5], pp[0],pp[1]) : "-";
             
