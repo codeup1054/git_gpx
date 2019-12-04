@@ -134,7 +134,7 @@ class _markers {
             icon: dist_icon,
             label: {
               text: ((dist+"").length>4)? dist.toFixed(1)+"":dist+"",
-              color: '#024',
+              color: '#034',
               fontSize: '9px',
               fontWeight: 'normal'
             }
@@ -999,7 +999,7 @@ function refreshTrans ()
         $('div.heatmapdiv').css({ opacity: hmOpacity });
 //            $("#slider_transperency" ).find(".ui-slider-handle").text(tval);
         $('span.ui-slider-handle').css({'padding':'0px', 'display': 'inline-block'})
-                                   .html("<div style='font-size:9px; text-align:center; top:0px; heigth:10px; padding:3px; line-height: 150%; border:0px solid red;'>"+tval+"</div>");
+                                   .html("<div>"+tval+"</div>");
 //           console.log("@@ tval",tval );    
 }
 
