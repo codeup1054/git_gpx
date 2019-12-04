@@ -1,4 +1,5 @@
 var gpx = {};
+tm();
 
 function makeApiCall(action) {
   
@@ -65,55 +66,40 @@ function makeApiCall(action) {
       var request = gapi.client.sheets.spreadsheets.get(params);
       request.then(function(response) {
         // TODO: Change code below to process the `response` object:
-        shetsNames = $(response.result.sheets).map(function (k,v) {
+      shetsNames = $(response.result.sheets).map(function (k,v) {
             
             if (v.properties.title[0] != "~" ) return v.properties.title; 
             
         }).get();
 
-//        console.log("@@@ shnames", shetsNames);
-
         $(".datasetcheckbox").append("<div class='checkbox_field'>\
             <div check=all><input type=checkbox id='all' onchange='show(this.id)'>" +
                     "<label for='all'>Все</label></div></div>");
 
+//        console.log("@@@ shnames", shetsNames);
+//        shetsNames.sort();
         
-        shetsNames.sort();
-        
-        sh_res = [];
+        tm('start load');        
         
         $(shetsNames).each(function(k,v){
-              
-              var params = {
-                spreadsheetId: '1zNy8SZ-ZPnAYXsGGmxvDYe0hHnyS6spuYuQCcAxg6dA',  // TODO: Update placeholder value.
-                range: v+'!A1:J1000',  // TODO: Update placeholder value.
-              };
-              
-              var request = gapi.client.sheets.spreadsheets.values.get(params);
-              request.then(function(response) {
-// TODO: Change code below to process the `response` object:
-//               console.log("@@@ populateSheet:", sh_res.push(response.result.values)) //,res,v);
-//             setTimeout(function () { // костыль для асинхронной работы     
-                populateSheet(response.result,v);
-                console.log("@@ gpx=",gpx);
-//              },20);
-              }, function(reason) {
-                console.error('error: ' + reason.result.error.message);
-              });        
-          });
-/*          
-          .promise().done( function(){
+           
+           $(".datasetcheckbox").append("<div class='checkbox_field'>\
+                <div check="+v+"><input type=checkbox id='"+v+
+                    "' onchange='show(this.id)'>" +
+                "<label for='"+v+"'><gpx_total></gpx_total>"+v+"</label></div></div>");
+//                "<label for='"+v+"'>"+cels.length+"."+v+"</label></div></div>");
+           
+          }).promise().done( function(){ 
             
-            console.log("@@@ populate 1:", sh_res, sh_res.length);
+                $(shetsNames).each(function(k,v){
+                   cells = getGoogleGPX(v);
+//                   console.log("@@ cells=",cells);
+                  });
+                
             
-            $(shetsNames).each(function(k,v){
-                    console.log("@@@ populate 2:", k, sh_res[k]);
-                    populateSheet(sh_res[k],v);
-                });
-            }); 
-*/        
+          } );
         
-        
+
       }, function(reason) {
         console.error('error: ' + reason.result.error.message);
       })
@@ -121,6 +107,31 @@ function makeApiCall(action) {
 
     }
 }
+
+    function getGoogleGPX(sheetName)
+    {
+        
+        var params = {
+            spreadsheetId: '1zNy8SZ-ZPnAYXsGGmxvDYe0hHnyS6spuYuQCcAxg6dA',  // TODO: Update placeholder value.
+            range: sheetName+'!A1:J1000',  // TODO: Update placeholder value.
+          };
+          
+        var request = gapi.client.sheets.spreadsheets.values.get(params);
+            request.then(function(response) {
+                
+//            console.log("@@ sheetName= ", sheetName, response.result)
+            
+            populateSheet(response.result,sheetName)
+            
+            tm("load data"+sheetName);
+
+            return response.result;
+                
+          }, function(reason) {
+            console.error('error: ' + reason.result.error.message);
+          });        
+    
+    }
 
     function initClient() {
       var API_KEY = 'AIzaSyBbtTWVRcUwdDgQbxbhAUU3XTbhxP4NyO0';  // TODO: Update placeholder with desired API key.
@@ -162,16 +173,19 @@ function makeApiCall(action) {
       gapi.auth2.getAuthInstance().signOut();
     }
     
-    function populateSheet(res,v)
+    function populateSheet(res,sheetName)
     {   
         var cels = res.values;
 //        console.log("@@@ populateSheet",  v, cels) //,res,v);
         var row = "";
         
-        gpx[v]=res.values;
+        gpx[sheetName]=res.values;
+        
+        total_points = cels.length;
+
 
         dist_total = 0;
-        for (var r=0; r < cels.length; r++)
+        for (var r=0; r < total_points; r++)
         {   
             if (cels[r][2] == '') continue;
             
@@ -196,14 +210,16 @@ function makeApiCall(action) {
                   "</tr>";
         }
         
-        $(".datasetcheckbox").append("<div class='checkbox_field'>\
-            <div check="+v+"><input type=checkbox id='"+v+
+        $("label[for='"+sheetName+"'] gpx_total").text("("+ cels.length +") ");
+        
+/*        $(".datasetcheckbox").append("<div class='checkbox_field'>\
+            <div check="+sheetName+"><input type=checkbox id='"+sheetName+
                     "' onchange='show(this.id)'>" +
                     "<label for='"+v+"'>"+cels.length+"."+v+"</label></div></div>");
-
+*/
         
-        $(".datasets").append("<div class='wp_panel hide "+v+"'><table class='tab' dataset='"+v+"'></table><div>");
-        $("[dataset ="+v+"]").append(row);
+        $(".datasets").append("<div class='wp_panel hide "+sheetName+"'><table class='tab' dataset='"+sheetName+"'></table><div>");
+        $("[dataset ="+sheetName+"]").append(row);
         
         $(".tab tbody").sortable({
                 helper: fixHelperModified,
@@ -335,4 +351,29 @@ function show(id)
   savegpx();
 }    
 
+
+var start;
+var lap;
+
+function tm(s="")
+{
+    var output = "";
+
+// Remember when we started
+   if (s == "")
+   {
+    lap = start = new Date().getTime();
+    
+    var date = new Date();
+    var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+    console.log("Старт: %s",str);        
+    }
+    else 
+    {
+    var end = new Date().getTime();
+    console.log("%s %s %s",end - start,end - lap,s);        
+    lap = end; 
+    }
+}
 

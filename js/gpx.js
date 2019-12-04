@@ -1,6 +1,8 @@
 var map;
 var hmOpacity = 0.5;
-var homeGeo = ["55.6442983","37.4959946"]
+var homeGeo = ["55.6442983","37.4959946"] // base
+var homeGeo = ["55.7","37.32"]
+var zoom = 11;
 
 // Класс для обработки массивов маркеров
 
@@ -462,9 +464,9 @@ var polyline;
 function initMap() {
 
   var mapOptions = {
-    zoom: 12,
+    zoom: zoom,
 //    mapTypeId: 'satellite',
-    center: new google.maps.LatLng(55.65,37.50)
+    center: new google.maps.LatLng(homeGeo[0],homeGeo[1])
   };
 
     map = new google.maps.Map(document.getElementById('map'), mapOptions );

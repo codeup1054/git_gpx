@@ -271,6 +271,7 @@ button.sign
         line-height: 30px;
         padding-left: 10px;
       }
+
 #slider_transperency span.ui-slider-handle div  /*регулятор прозрачности*/      
 {   font-size:9px; text-align:center; 
     top:0px; 
