@@ -20,7 +20,7 @@ class _markers {
      var self = this;
     $(this.d).each(function(k,m) {
         
-//        console.log("@@ addMarker", m.lat, isFloat(m.lat*1));
+//        console.log("@@ addMarker", m);
         
         if( isFloat(m.lat*1) && isFloat(m.lng*1) )
         self.placeMarker(m);}) 
@@ -31,6 +31,8 @@ class _markers {
   placeMarker(m) {
 
      var dist = getDistanceFromLatLonInKm(m.lat, m.lng );
+
+     var dist = m.dist;
     
     //    color = m.color.substring(0, 7);
      var color = ( typeof m.color !== 'undefined')? m.color : "#ffee00";
@@ -79,14 +81,44 @@ class _markers {
                         rotation: aRotationVariable,
                         fillOpacity: 1,
                         strokeWeight: 0.4
+                    };
+                    var icon = {
+                        anchor: new google.maps.Point(30, 30.26),
+                        size: new google.maps.Size(60,30.26),
+                        url: 'data:image/svg+xml,<svg class="mono_icon"  width="15" height="15" xmlns="http://www.w3.org/2000/svg">\
+                        <defs>\
+                            <radialGradient id="exampleGradient">\
+                              <stop offset="10%" stop-color="gold"/>\
+                              <stop offset="95%" stop-color="green"/>\
+                            </radialGradient>\
+                        </defs>\
+                            <path  class="mono_icon" fill-opacity=".3"   stroke-width="0.5" fill="#f40" \
+                            stroke="#f40" id="svg_1" \
+                            d="m14.685496,6.570998c0,3.790972 -7.068536,8.225084 -7.068536,8.225084s-7.302785,-4.433682 -7.302785,-8.282617c0,-3.651441 2.918311,-6.359523 6.88748,-6.359523c3.968235,0 7.483841,2.76561 7.483841,6.417056z"/>\
+                             </svg>'
+                    };
+                    var icon = {
+                        anchor: new google.maps.Point(10, 10),
+                        size1: new google.maps.Size(60,30.26),
+                        url: 'data:image/svg+xml;utf-8, \
+      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+        <circle fill="%232255aa" stroke="white" stroke-width="1"  cx="10" cy="10" r="4"/> \
+        <rect x="14" y="1" width="27" height="11" fill-opacity="0.40"  fill="rgb(255,255,255)" stroke="none" /> \
+        <text x="27" y="10" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+dist.toFixed(2)+'</text>\
+      </svg>'
+
+//        <text stroke="null" id="svg_2" x="18" y="17" font-family="Arial, sans-serif" text-anchor="middle" font-size="9" fill="#0f0">нет</text>\
+//        <path fill="rgb(255, 180, 0)" stroke="white" stroke-width="1.5" d="M3.5 3.5h25v25h-25z" >ttt</path> \
+
                     }
+                                    
         }
 
 //var anSVGPathString = "M61.2849 48.0244C61.2849 64.3164 48.0769 77.5244 31.7849 77.5244C15.4929 77.5244 2.28491 64.3164 2.28491 48.0244C2.28491 34.9504 22.2469 12.2714 29.6169 3.82141C31.1029 2.11741 33.7479 2.12141 35.2349 3.82441C42.6149 12.2764 61.2849 34.9514 61.2849 48.0244Z"
 
 
         
-        var marker = new google.maps.Marker({
+       var marker = new google.maps.Marker({
             name: m.name,
             title: m.name,
             dist:dist,
@@ -97,26 +129,7 @@ class _markers {
             icon: icon,
           });
       
-       
-      var dist_icon='data:image/svg+xml,<svg width="38" height="38" xmlns="http://www.w3.org/2000/svg">\
-                <path stroke-width="0.7"  fill-opacity=".5"  fill="#f40" stroke="#f40" id="svg_1" d="m36.774745,13.048917c0,11.065711 -17.52099,24.008723 -17.52099,24.008723s-18.10163,-12.941758 -18.10163,-24.176659c0,-10.658426 7.376073,-12.233705 17.214569,-12.233705c9.836183,0 18.408051,1.743203 18.408051,12.401641z" />\
-                <text stroke="null" id="svg_2" x="18" y="17" font-family="Arial, sans-serif" text-anchor="middle" font-size="9" fill="#fff">'+((dist)?dist:"нет")+'</text>\
-                </svg>';
-                          
-      var dist_icon = {
-                url: 'data:image/svg+xml,<svg class="mono_icon"  width="15" height="15" xmlns="http://www.w3.org/2000/svg">\
-                    <defs>\
-                        <radialGradient id="exampleGradient">\
-                          <stop offset="10%" stop-color="gold"/>\
-                          <stop offset="95%" stop-color="green"/>\
-                        </radialGradient>\
-                  </defs>\
-                <path  class="mono_icon" fill-opacity=".3"   stroke-width="0.5" fill="#f40" \
-                stroke="#f40" id="svg_1" \
-                d="m14.685496,6.570998c0,3.790972 -7.068536,8.225084 -7.068536,8.225084s-7.302785,-4.433682 -7.302785,-8.282617c0,-3.651441 2.918311,-6.359523 6.88748,-6.359523c3.968235,0 7.483841,2.76561 7.483841,6.417056z"/>\
-                 </svg>'
-                 };
-                 
+/*                 
       var dist_icon =  {
       path: "M-10,0a20,20 0 1,0 40,0a20,20 0 1,0 -40,0", // circle
       path: "M 0 0 L 20 0 L 20 10 L 0 10 z",
@@ -141,8 +154,11 @@ class _markers {
               fontWeight: 'normal'
             }
           });
+        
+        
           
         base_dist.bindTo("position", marker);
+*/        
        
         google.maps.event.addListener(marker, 'click', function () { markerClick(this);});
         google.maps.event.addListener(marker, 'dblclick', function () { markerDel(this);});
@@ -183,7 +199,7 @@ $(resize).resizable({
       minWidth: 120,
       resize: function(event, ui){
 
-        console.log("containerWidth ", containerWidth , resize);
+//        console.log("@@ containerWidth ", containerWidth , resize);
 
           var currentWidth = ui.size.width;
           
@@ -390,7 +406,8 @@ function callDrag(marker,drag_end=0) {
 
 function updateTotalDist(mname)
 {
-    console.log(mname);
+    console.log("@@ updateTotalDist=",mname);
+    show(mname.idx);
 //    dist = ((r>0) ? ""+dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>":"");
 }
 
@@ -671,7 +688,7 @@ function plotElevation(results, status) {
     // Display a polyline of the elevation path.
     var pathOptions = {
       path: elevationPath,
-      strokeColor: '#5555aa',
+      strokeColor: '#2255aa',
       opacity: 0.9,
       map: map
     }
@@ -734,7 +751,7 @@ function plotElevation(results, status) {
         pos = elevationPath[e.row];
         console.log("@@@ pos", pos, e, elevations[e.row]);
         
-        while(el_markers.length) { el_markers.pop().setMap(null);   }
+        while(el_markers.length) { el_markers.pop().setMap(null);  base_dist.setMap(null);   }
         
         var elev = elevations[e.row].elevation.toFixed(0); 
         

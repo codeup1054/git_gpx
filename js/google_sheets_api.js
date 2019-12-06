@@ -1,5 +1,8 @@
-var gpx = {};
+var gpx = [];
+var deferreds = [];
 tm();
+
+
 
 function makeApiCall(action) {
   
@@ -81,6 +84,7 @@ function makeApiCall(action) {
         
         tm('start load');        
         
+        
         $(shetsNames).each(function(k,v){
            
            $(".datasetcheckbox").append("<div class='checkbox_field'>\
@@ -88,29 +92,26 @@ function makeApiCall(action) {
                     "' onchange='show(this.id)'>" +
                 "<label for='"+v+"'><gpx_total></gpx_total>"+v+"</label></div></div>");
 //                "<label for='"+v+"'>"+cels.length+"."+v+"</label></div></div>");
-           
-          }).promise().done( function(){ 
-            
-                $(shetsNames).each(function(k,v){
-                   cells = getGoogleGPX(v);
-//                   console.log("@@ cells=",cells);
-                  });
-                
-            
-          } );
-        
+            getGoogleGPX(v);
+               
+          });
+          
+          $.when.apply(deferreds).then(function() {
+                // all AJAX calls have complete
+               tm('deff') 
+//               console.log("@@ gpx=",gpx);
+            });
+
 
       }, function(reason) {
         console.error('error: ' + reason.result.error.message);
       })
-      
-
     }
 }
 
+
     function getGoogleGPX(sheetName)
     {
-        
         var params = {
             spreadsheetId: '1zNy8SZ-ZPnAYXsGGmxvDYe0hHnyS6spuYuQCcAxg6dA',  // TODO: Update placeholder value.
             range: sheetName+'!A1:J1000',  // TODO: Update placeholder value.
@@ -118,13 +119,14 @@ function makeApiCall(action) {
           
         var request = gapi.client.sheets.spreadsheets.values.get(params);
             request.then(function(response) {
-                
+
 //            console.log("@@ sheetName= ", sheetName, response.result)
-            
-            populateSheet(response.result,sheetName)
+
+            deferreds.push( populateSheet(response.result,sheetName) )
+
+            gpx.push ({sheetName:response.result.values});
             
             tm("load data"+sheetName);
-
             return response.result;
                 
           }, function(reason) {
@@ -179,36 +181,45 @@ function makeApiCall(action) {
 //        console.log("@@@ populateSheet",  v, cels) //,res,v);
         var row = "";
         
-        gpx[sheetName]=res.values;
-        
         total_points = cels.length;
+        dist_next = dist_total = 0;
 
 
-        dist_total = 0;
         for (var r=0; r < total_points; r++)
         {   
             if (cels[r][2] == '') continue;
             
-            pp = (r>1)? cels[r-1].slice(4,6): homeGeo; // если первая считаем расстояние от базы  
+//            console.log("@@ pp ", r );
             
-            //console.log("@@ pp ", r, v, pp, cels[r])
-                 
-            dist_next = (cels[r][4] && cels[r][5] )? getDistanceFromLatLonInKm(cels[r][4], cels[r][5], pp[0],pp[1]) : "-";
             
-            dist_total += isNaN(dist_next)? 0: dist_next; // добавляем если число  
-             
+            if ( r > 1 )
+            {
+                dist_next = getDistanceFromLatLonInKm(cels[r][4], cels[r][5], cels[r-1][4],cels[r-1][5]);
+//                console.log("@@ cells", cels[r][4], cels[r][5], cels[r-1][4],cels[r-1][5]);
+                dist_total += isNaN(dist_next)? 0: dist_next; // добавляем если число  
+            } 
+            else
+            {
+            }    
+
+            tdist_html = (r>0) ? dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>" :"Total"
+           
+//continue;
             
-            row += "<tr class='"+((r)?"":"header")+"'><td>"+cels[r][0]+"</td>"+
-                  "<td class='hide'>"+cels[r][1]+"</td>"+        
+            row += "<tr class='"+((r)?"":"header")+"'><td>"+cels[r][0]+"</td>" +
+                  "<td class='hide'>"+cels[r][1]+"</td>" +        
                   "<td>"+cels[r][2]+"</td>"+        
                   "<td geo>"+cels[r][3]+"</td>"+        
                   "<td>"+cels[r][4]+"</td>"+        
                   "<td>"+cels[r][5]+"</td>"+
                   "<td>"+cels[r][6]+"</td>"+
                   "<td class='hide'>"+cels[r][7]+"</td>"+ // color
-                  "<td>"+((r>0) ? ""+dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>":"")+"</td>"+
+                  "<td>"+tdist_html+"</td>"+
                   "</tr>";
+
+        
         }
+
         
         $("label[for='"+sheetName+"'] gpx_total").text("("+ cels.length +") ");
         
@@ -317,7 +328,6 @@ function show(id)
     $("[type=checkbox]:checked").each(function(){
        
        ds = $(this).attr('id');
-       
 
 //     console.log("@@@ show()",ds, $("[type=checkbox]:checked"));
        
@@ -329,25 +339,49 @@ function show(id)
        
 //       console.log("@@@ trs", trs);
        
+       lat = total_dist = 0
+              
        $(trs).each(function(k,tr) {
            
            t = $(tr).children("td").map(function(ek,ev){ return $(ev).text()}); 
-                  
+
+           lat = t[4];
+           lng = t[5];
+           
+           
+           if (k>1)
+           {
+            total_dist +=  (k)? getDistanceFromLatLonInKm(lat, lng, olat, olng):0;
+//            console.log("@@ k ",total_dist, k, lat, lng, olat, olng);
+           }
+           else
+           {
+//            console.log("@@ k 0");
+           } 
+             
+           
+                                   
            m = { 'name':t[2],
                  'idx':ds+'_'+t[0],
                  'group':ds,
                  'lat':t[4],
                  'lng':t[5],
-                 'dist':t[6],
+                 'dist':total_dist,
                  'color':t[7]  
                  };
+           
+           olat = lat;
+           olng = lng;
             
+
+           
+
            markersArray.push(m);
        });
    });
    
   markersArray.addMarkers();
-  
+  drawPath();
   savegpx();
 }    
 
