@@ -98,13 +98,13 @@ class _markers {
                              </svg>'
                     };
                     var icon = {
-                        anchor: new google.maps.Point(10, 10),
+                        anchor: new google.maps.Point(14, 14),
                         size1: new google.maps.Size(60,30.26),
                         url: 'data:image/svg+xml;utf-8, \
       <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
-        <circle fill="%232255aa" stroke="white" stroke-width="1"  cx="10" cy="10" r="4"/> \
-        <rect x="14" y="1" width="27" height="11" fill-opacity="0.40"  fill="rgb(255,255,255)" stroke="none" /> \
-        <text x="27" y="10" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+dist.toFixed(2)+'</text>\
+        <circle fill="%232255aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="4"/> \
+        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
+        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+dist.toFixed(2)+'</text>\
       </svg>'
 
 //        <text stroke="null" id="svg_2" x="18" y="17" font-family="Arial, sans-serif" text-anchor="middle" font-size="9" fill="#0f0">нет</text>\
@@ -395,7 +395,8 @@ function callDrag(marker,drag_end=0) {
     markersArray.updateMarkerRow(marker);
     
     if (drag_end) 
-        { map.panTo(marker.position);
+        { 
+         // map.panTo(marker.position);
           updateGeoInTable(marker.name,lat,lng);  
           drawPath();
           updateTotalDist(marker);
