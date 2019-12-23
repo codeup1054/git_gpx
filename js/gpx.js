@@ -245,7 +245,7 @@ $(resize).resizable({
            ms.push(mm);
        }
        
-      console.log("@@ ms", ms);  
+//      console.log("@@ ms", ms);  
     
       $.post("a.php",
       {
@@ -1028,4 +1028,3 @@ toggle = function(s=1) {
     $('#toggleHM').val( $('#toggleHM').val() == "Show HM" ? "Hide HM" : "Show HM");  
 //    console.log("@@ toggle v=", $('#toggleHM').val() );
 };
-

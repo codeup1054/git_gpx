@@ -191,10 +191,11 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
     </div>
     <div id="right_panel">
         <div class="buttons_panel">
-            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('write')">Сохранить в Google</button>
+            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('write')">В Google</button>
+            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('save_json')">В JSON</button>
             <button id="button  signout-button" class="ui-button ui-widget ui-corner-all"  onclick="fitMarkers()">Все</button>
             <button id="button  signout-button" class="ui-button ui-widget ui-corner-all"  onclick="drawPath()">Профиль</button>
-            <button id="button signin-button" class="sign"  onclick="handleSignInClick()">Sign in</button>
+            <button id="button  signin-button" class="sign"  onclick="handleSignInClick()">Sign in</button>
             <button class='sign' id="button signout-button" onclick="handleSignOutClick()">Sign out</button>
         </div>
         <div id="map"></div>  

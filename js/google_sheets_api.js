@@ -1,4 +1,5 @@
-var gpx = [];
+var glob_gpx = {};
+var gpx_line = [];
 var deferreds = [];
 tm();
 
@@ -14,7 +15,25 @@ function makeApiCall(action) {
             title = sheets[0].get("properties", {}).get("title", "Sheet1")
             sheet_id = sheets[0].get("properties", {}).get("sheetId", 0)
             break; 
-        
+
+      case "save_json":  
+            json_gpx = JSON.stringify(gpx);
+            json_gpx2 = JSON.stringify( [{ uno: 1, Ленинград: 2 }] );
+            console.log("@@ gpx", json_gpx2 ,  gpx , json_gpx);
+            
+            $.ajax
+                ({
+                    type: "POST",
+                    dataType : 'json',
+                    async: false,
+                    url: 'act.php',
+                    data: { data: json_gpx },
+                    success: function () {alert("Thanks!"); },
+                    failure: function() {alert("Error!");}
+                });
+            
+            break; 
+      
       case "write":  
 
             $("[type=checkbox]:checked").each(function(){
@@ -22,16 +41,12 @@ function makeApiCall(action) {
               var vals = new Array();
 
                ds = $(this).attr('id');
-
-
                trs = $('.wp_panel.'+ds+" tr" )
-
                row = 0;
                
                $(trs).each(function(k,tr) {
                        t = $(tr).children("td").map(function(ek,ev){ return $(ev).text()}).get(); 
                        vals[row++] = t;
-                              
                    });
                 
               var params = {
@@ -123,15 +138,40 @@ function makeApiCall(action) {
 //            console.log("@@ sheetName= ", sheetName, response.result)
 
             deferreds.push( populateSheet(response.result,sheetName) )
-
-            gpx.push ({sheetName:response.result.values});
             
-            tm("load data"+sheetName);
+//            console.log("response.result.values= ", response.result.values[0]);
+            
+            col_names=response.result.values[0];
+            
+            $.each(response.result.values, function(k,v)
+            {
+//                console.log("response.result.values= ", v  );
+                var myArray = $.map(v, function(element, key ) {        // ***
+//                       console.log("element, key= ", element, key) 
+                       return element.value;                               // ***
+                    });
+            });
+            
+            gcols = response.result.values[0]
+            gpx_line = [];
+            
+            response.result.values.map(function(v,k){ 
+                    
+                    gpx_line[k] = v.map(function (vv,kk) { d = {}; d[gcols[kk]] = vv; return d; } )
+                    
+                    })
+            
+            glob_gpx[sheetName]=gpx_line;
+            
+            
+//            tm("load data"+sheetName);
             return response.result;
                 
           }, function(reason) {
             console.error('error: ' + reason.result.error.message);
-          });        
+          }); 
+          
+            console.log("@@ res", glob_gpx);
     
     }
 
@@ -216,13 +256,10 @@ function makeApiCall(action) {
                   "<td class='hide'>"+cels[r][7]+"</td>"+ // color
                   "<td>"+tdist_html+"</td>"+
                   "</tr>";
-
-        
         }
-
         
         $("label[for='"+sheetName+"'] gpx_total").text("("+ cels.length +") ");
-        
+
 /*        $(".datasetcheckbox").append("<div class='checkbox_field'>\
             <div check="+sheetName+"><input type=checkbox id='"+sheetName+
                     "' onchange='show(this.id)'>" +
@@ -249,7 +286,6 @@ function makeApiCall(action) {
             if (e.ctrlKey) // description column
             {
             td_val = $(this).text();
-
                 switch(index)
                 {
                 case 3: geo_result = geocode(td_val);
@@ -358,8 +394,6 @@ function show(id)
            {
 //            console.log("@@ k 0");
            } 
-             
-           
                                    
            m = { 'name':t[2],
                  'idx':ds+'_'+t[0],
