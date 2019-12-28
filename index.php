@@ -191,7 +191,9 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
     </div>
     <div id="right_panel">
         <div class="buttons_panel">
-            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('write')">В Google</button>
+            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('read_google')">Из Google</button>
+            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('save_google')">В Google</button>
+            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('read_json')">Из JSON</button>
             <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('save_json')">В JSON</button>
             <button id="button  signout-button" class="ui-button ui-widget ui-corner-all"  onclick="fitMarkers()">Все</button>
             <button id="button  signout-button" class="ui-button ui-widget ui-corner-all"  onclick="drawPath()">Профиль</button>
@@ -206,7 +208,7 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
 <div id="elevation-chart" ></div>
 
 <div id="floating-panel">
-      <input id='toggleHM' type="button" value="Hide HM" onclick="toggle();"></input>
+<!--      <input id='toggleHM' type="button" value="Hide HM" onclick="toggle();"></input> -->
       <div id="slider_transperency"></div>
 </div>
 

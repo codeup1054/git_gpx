@@ -1,12 +1,10 @@
-var glob_gpx = {};
+var glob_gpx = [];
 var gpx_line = [];
 var deferreds = [];
 tm();
 
 
-
 function makeApiCall(action) {
-  
   switch (action)
       {
       case "get_sheets_names":
@@ -17,9 +15,9 @@ function makeApiCall(action) {
             break; 
 
       case "save_json":  
-            json_gpx = JSON.stringify(gpx);
+            json_gpx = JSON.stringify(glob_gpx);
             json_gpx2 = JSON.stringify( [{ uno: 1, Ленинград: 2 }] );
-            console.log("@@ gpx", json_gpx2 ,  gpx , json_gpx);
+            console.log("@@ gpx", glob_gpx );
             
             $.ajax
                 ({
@@ -33,13 +31,21 @@ function makeApiCall(action) {
                 });
             
             break; 
+
+      case "read_json":          
+            gpxFromJson();
+            break; 
       
-      case "write":  
+      case "read_google":  
+            gpxFromGoogle();
+            break; 
+
+
+      case "save_google":  
 
             $("[type=checkbox]:checked").each(function(){
 
               var vals = new Array();
-
                ds = $(this).attr('id');
                trs = $('.wp_panel.'+ds+" tr" )
                row = 0;
@@ -68,7 +74,157 @@ function makeApiCall(action) {
               }); // $(".checkbox.active").each
             break;
       
-      default:   
+      default:
+//            gpxFromJson();     
+            gpxFromGoogle();
+      }
+  } // make call API    
+
+
+function gpxFromJson()  
+{           
+            glob_gpx = [];
+            tm('start read JSON');
+            $.get({ url: 'data/gpx.json', cache: false },function(data) {
+                   console.log("@@ read_json ",data);
+                   glob_gpx = data;
+                   gpxSetNamesToTable(data);
+                });
+            tm('end read JSON');
+}
+
+
+function gpxSetNamesToTable(gpx_names)
+{   
+    $(".datasetcheckbox").html("");
+
+    console.log("@@ names ", gpx_names) 
+    
+    $.each(gpx_names, function (k,v)
+     {
+//       console.log("@@ names each", v, v.name); onclick='updateMarkersOnMap(this.id)
+       $(".datasetcheckbox").append("<div class='checkbox_field' >\
+        <div check="+v.name+"><input type=checkbox id='"+v.name+
+            "' onchange='gpxSetCheck(this.id)'>" +
+        "<label for='"+v.name+"'><gpx_total>("+v.points.length+") </gpx_total>"+v.name+"</label></div></div>");
+        gpxPointsToTable(v,k);
+     });
+}
+
+function isLat(lat) {  return isFinite(lat) && Math.abs(lat) <= 90; }
+function isLon(lng) {  return isFinite(lng) && Math.abs(lng) <= 180; }
+
+
+function gpxSetCheck(id)
+{
+    console.log('@@ gpxSetCheck',id);
+    updateMarkersOnMap(id);
+}
+
+
+
+function gpsUpdateSetType(sel)
+{   
+    setId = $(sel).attr('set_id');
+
+    glob_gpx[setId].meta.type = $(sel).val();
+
+    console.log("@@ gpsUpdateSetType", glob_gpx);
+}
+
+function gpxPointsToTable(v,id)
+ {
+//    console.log("@@ gpxPointsToTable",points);
+    
+/*
+0: {ID: "ID"}
+1: {Status: "Status"}
+2: {name: "name"}
+3: {description: "description"}
+4: {lat: "lat"}
+5: {lng: "lng"}
+6: {dist: "dist"}
+7: {color: "color"}
+8: {time: "time"}
+9: {Название станции: "Название станции"}
+*/  
+
+    points = v.points; 
+    setName = v.name;
+    
+    options = ['path','poi'].map(function(x) { return "<option "+ ((v.meta.type == x )? "selected":"")+">"+x+"</option>"; } ).join("")
+    
+//    console.log("@@ type options", options );
+    
+    setInfo = "<table class=stab>"+
+              "<tr><td>Набор:</td><td><input value='"+v.name+"'></input></td></tr>"+
+              "<tr><td>Тип:</td><td><select set_name='"+v.name+"' set_id='"+id+"' onchange='gpsUpdateSetType(this);' >"+options+"</select></td></tr>"+
+              "</table>";
+    
+    row = "<tr class='header'><td> </td>" +
+                  "<td class='hide'>Название</td>" +        
+                  "<td>Наименование</td>"+        
+                  "<td geo>Описание</td>"+        
+                  "<td>Широта</td>"+        
+                  "<td>Долгота</td>"+
+                  "<td>До базы</td>"+
+                  "<td class='hide'>Цвет</td>"+ // color
+                  "<td>Расстояния</td>"+
+                  "</tr>";
+  
+    hide = (setName != '1Мещ-Сколково')?"":"hide";
+  
+    $(".datasets").append("<div class='wp_panel "+hide+" "+setName+"'>"+ setInfo +"<table class='tab' dataset='"+setName+"'></table><div>");
+
+  
+    $.each(points, function( k,v)
+        {   
+//            if(k == 0) { continue;}
+//            console.log("@@ eachGPX ", v );
+            tdist_html = 0;
+            dist_total = 0;
+//          remask = '^-?[0-9]{1,3}(?:\.[0-9]{1,10})?$';
+            
+         if ( typeof o_lat !== 'undefined' || ( isLat( v.lat ) && isLon( v.lng) ) )
+            {
+                dist_next = getDistanceFromLatLonInKm(v.lat, v.lng, o_lat, o_lng);
+//                console.log("@@ cells", cels[r][4], cels[r][5], cels[r-1][4],cels[r-1][5]);
+                dist_total += isNaN(dist_next)? 0: dist_next; // добавляем если число  
+                tdist_html = dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>"; 
+            } 
+            
+            o_lat = v.lat;  
+            o_lng = v.lng;  
+           
+//continue;
+            
+            row += "<tr class='"+k+"'><td>"+k+"</td>" +
+                  "<td class='hide'>"+v.name+"</td>" +        
+                  "<td>"+v.name+"</td>"+        
+                  "<td geo>"+v.description+"</td>"+        
+                  "<td>"+v.lat+"</td>"+        
+                  "<td>"+v.lng+"</td>"+
+                  "<td>"+v.dist+"</td>"+
+                  "<td class='hide'>"+v.color+"</td>"+ // color
+                  "<td>"+  tdist_html  +"</td>"+
+                  "</tr>";
+        });
+        
+        $("label[for='"+setName+"'] gpx_total").text("("+ points.length +") ");
+        $("[dataset ="+setName+"]").append(row);
+
+        tm("addToTable"+setName)
+        
+        $(".tab tbody").sortable({
+                helper: fixHelperModified,
+                stop: updateIndex,
+                cancel: '[contenteditable]',
+        })//.disableSelection();
+    }
+
+
+
+function gpxFromGoogle() {     
       var params = {
         // The spreadsheet to request.
         spreadsheetId: '1zNy8SZ-ZPnAYXsGGmxvDYe0hHnyS6spuYuQCcAxg6dA',  // TODO: Update placeholder value.
@@ -90,8 +246,8 @@ function makeApiCall(action) {
             
         }).get();
 
-        $(".datasetcheckbox").append("<div class='checkbox_field'>\
-            <div check=all><input type=checkbox id='all' onchange='show(this.id)'>" +
+        $(".datasetcheckbox").html("<div class='checkbox_field'>\
+            <div check=all><input type=checkbox id='all' onchange='updateMarkersOnMap(this.id)'>" +
                     "<label for='all'>Все</label></div></div>");
 
 //        console.log("@@@ shnames", shetsNames);
@@ -100,20 +256,23 @@ function makeApiCall(action) {
         tm('start load');        
         
         
+        
         $(shetsNames).each(function(k,v){
            
            $(".datasetcheckbox").append("<div class='checkbox_field'>\
                 <div check="+v+"><input type=checkbox id='"+v+
-                    "' onchange='show(this.id)'>" +
+                    "' onchange='updateMarkersOnMap(this.id)'>" +
                 "<label for='"+v+"'><gpx_total></gpx_total>"+v+"</label></div></div>");
 //                "<label for='"+v+"'>"+cels.length+"."+v+"</label></div></div>");
-            getGoogleGPX(v);
+            getGoogleGPX(k,v);
+            
                
           });
+
+//          console.log("@@ res",glob_gpx);
           
           $.when.apply(deferreds).then(function() {
                 // all AJAX calls have complete
-               tm('deff') 
 //               console.log("@@ gpx=",gpx);
             });
 
@@ -122,10 +281,9 @@ function makeApiCall(action) {
         console.error('error: ' + reason.result.error.message);
       })
     }
-}
 
 
-    function getGoogleGPX(sheetName)
+    function getGoogleGPX(set_id,sheetName)
     {
         var params = {
             spreadsheetId: '1zNy8SZ-ZPnAYXsGGmxvDYe0hHnyS6spuYuQCcAxg6dA',  // TODO: Update placeholder value.
@@ -136,10 +294,9 @@ function makeApiCall(action) {
             request.then(function(response) {
 
 //            console.log("@@ sheetName= ", sheetName, response.result)
-
-            deferreds.push( populateSheet(response.result,sheetName) )
+//            deferreds.push( gpxPointToTable(response.result,sheetName) )
             
-//            console.log("response.result.values= ", response.result.values[0]);
+//            console.log("response.result.values= ", response.result.values);
             
             col_names=response.result.values[0];
             
@@ -153,25 +310,42 @@ function makeApiCall(action) {
             });
             
             gcols = response.result.values[0]
-            gpx_line = [];
+            geo_set = {};
+            points = [];
             
             response.result.values.map(function(v,k){ 
                     
-                    gpx_line[k] = v.map(function (vv,kk) { d = {}; d[gcols[kk]] = vv; return d; } )
+                    p = {}
+                    
+                    $.each( v , function(kk,vv) { p[gcols[kk]] = vv; } )
+                    
+                    points.push( p );
                     
                     })
             
-            glob_gpx[sheetName]=gpx_line;
+             geo_set = {'name': sheetName,
+                meta: {type: 'path',
+                       descriptin: '',  
+                       cdate: '2019-12-26', 
+                       mdate: '2019-12-26' 
+                       },
+                points : points
+               } 
+            
+            glob_gpx.push(geo_set);
+
+            gpxPointsToTable (geo_set,set_id)  // отрисовка таблицы как для JSON    
             
             
 //            tm("load data"+sheetName);
-            return response.result;
+//            return response.result;
+            return glob_gpx;
                 
           }, function(reason) {
             console.error('error: ' + reason.result.error.message);
           }); 
           
-            console.log("@@ res", glob_gpx);
+          console.log("@@ res",sheetName, glob_gpx);
     
     }
 
@@ -215,24 +389,34 @@ function makeApiCall(action) {
       gapi.auth2.getAuthInstance().signOut();
     }
     
-    function populateSheet(res,sheetName)
+    function gpxPointToTable(res,sheetName)
     {   
         var cels = res.values;
-//        console.log("@@@ populateSheet",  v, cels) //,res,v);
         var row = "";
         
         total_points = cels.length;
         dist_next = dist_total = 0;
+        
+         row = "<tr class='header'><td> </td>" +
+                  "<td class='hide'>Название</td>" +        
+                  "<td>Наименование</td>"+        
+                  "<td geo>Описание</td>"+        
+                  "<td>Широта</td>"+        
+                  "<td>Долгота</td>"+
+                  "<td>До базы</td>"+
+                  "<td class='hide'>Цвет</td>"+ // color
+                  "<td>Расстояния</td>"+
+                  "</tr>";
 
 
-        for (var r=0; r < total_points; r++)
+        for (var r=1; r < total_points; r++)
         {   
             if (cels[r][2] == '') continue;
             
 //            console.log("@@ pp ", r );
             
             
-            if ( r > 1 )
+            if ( r > 2 )
             {
                 dist_next = getDistanceFromLatLonInKm(cels[r][4], cels[r][5], cels[r-1][4],cels[r-1][5]);
 //                console.log("@@ cells", cels[r][4], cels[r][5], cels[r-1][4],cels[r-1][5]);
@@ -259,12 +443,7 @@ function makeApiCall(action) {
         }
         
         $("label[for='"+sheetName+"'] gpx_total").text("("+ cels.length +") ");
-
-/*        $(".datasetcheckbox").append("<div class='checkbox_field'>\
-            <div check="+sheetName+"><input type=checkbox id='"+sheetName+
-                    "' onchange='show(this.id)'>" +
-                    "<label for='"+v+"'>"+cels.length+"."+v+"</label></div></div>");
-*/
+        tm(sheetName)
         
         $(".datasets").append("<div class='wp_panel hide "+sheetName+"'><table class='tab' dataset='"+sheetName+"'></table><div>");
         $("[dataset ="+sheetName+"]").append(row);
@@ -274,14 +453,68 @@ function makeApiCall(action) {
                 stop: updateIndex,
                 cancel: '[contenteditable]',
         })//.disableSelection();
+    
+/*
+    var start = document.getElementById('start');
+    start.focus();
+    start.style.backgroundColor = 'yellow';
+    start.style.color = 'magenta';
+*/    
+
+/*                
+left = 37
+up = 38
+right = 39
+down = 40                
+*/                
+
+
+    document.onkeydown = checkKey;
+    
+    function checkKey(e) {
+        
+        e = e || window.event;
+        
+        el= start || $('.tab').find('td')[0];
+        
+        console.log("@@ e.keyCode", e.keyCode);
+        
+        switch (e.keyCode)
+        {
+         case 13:  
+         case 37: el = el.closest('tr').find('td').eq(index).next(); 
+                  break;
+         case 39: el = el.closest('tr').find('td').eq(index).prev(); 
+                  break;
+        }
+      }
+        
+        
+        $('.tab td').keypress(function(e) {
+                var $this = $(this),
+                    index = $this.closest('td').index();
+                console.log("@@ keypress",index,e.keyCode);
+                
+                el.css({color:'red'});
+                el.attr('contenteditable','true');
+                el.focus();
+                setTimeout(function() {
+                    el.focus();
+                }, 0);
+                 e.preventDefault();
+            });
+
         
         $(".datasets td").on("click", function(e){
-            
+            start = $(this);
+            start.focus();
+
             var self   = $(this),
+            
             index  = self.index(),
             text   = self.text();
        
-// console.log("@@@ table eq()" , text + ' ' + index);
+console.log("@@@ table eq()" , text + ' ' + index, start );
         
             if (e.ctrlKey) // description column
             {
@@ -343,13 +576,13 @@ function makeApiCall(action) {
             
         })
 
-    } // end populateSheet
+    } // end gpxPointToTable
     
-function show(id)
+function updateMarkersOnMap(id)
 {
 // http://qaru.site/questions/17975/google-maps-api-v3-how-to-remove-all-markers 
     
-    $(".wp_panel").addClass('hide');
+//    $(".wp_panel").addClass('hide');
     
     while(markers.length) { markers.pop().setMap(null);   }
 
@@ -365,9 +598,9 @@ function show(id)
        
        ds = $(this).attr('id');
 
-//     console.log("@@@ show()",ds, $("[type=checkbox]:checked"));
+    console.log("@@@ updateMarkersOnMap()",ds, $("[type=checkbox]:checked"));
        
-       $(".wp_panel."+ds).toggleClass('hide');
+//       $(".wp_panel."+ds).toggleClass('hide');
        
 //       console.log("@@@checkbox.active",ds);
         
@@ -406,17 +639,14 @@ function show(id)
            
            olat = lat;
            olng = lng;
-            
-
-           
 
            markersArray.push(m);
        });
    });
    
   markersArray.addMarkers();
-  drawPath();
-  savegpx();
+//  drawPath();
+//  savegpx();
 }    
 
 

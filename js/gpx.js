@@ -97,6 +97,10 @@ class _markers {
                             d="m14.685496,6.570998c0,3.790972 -7.068536,8.225084 -7.068536,8.225084s-7.302785,-4.433682 -7.302785,-8.282617c0,-3.651441 2.918311,-6.359523 6.88748,-6.359523c3.968235,0 7.483841,2.76561 7.483841,6.417056z"/>\
                              </svg>'
                     };
+                    
+                    var markerTitle = dist.toFixed(2);
+                    var markerTitle = m.name;
+                    
                     var icon = {
                         anchor: new google.maps.Point(14, 14),
                         size1: new google.maps.Size(60,30.26),
@@ -104,7 +108,7 @@ class _markers {
       <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
         <circle fill="%232255aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="4"/> \
         <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
-        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+dist.toFixed(2)+'</text>\
+        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+markerTitle+'</text>\
       </svg>'
 
 //        <text stroke="null" id="svg_2" x="18" y="17" font-family="Arial, sans-serif" text-anchor="middle" font-size="9" fill="#0f0">нет</text>\
@@ -276,7 +280,7 @@ function showhideInfoWindow()
 
      
      // Calculat e distаnce by lattitude longitude js 
- function savegpx()
+ function savegpxtoOSMAnd()
  {
 var cnt = 0;
 
@@ -397,6 +401,9 @@ function callDrag(marker,drag_end=0) {
     if (drag_end) 
         { 
          // map.panTo(marker.position);
+//          console.log("@@ updateTotalDist=", marker);
+          updateGeoInGlobalGpx(marker,lat,lng);
+          
           updateGeoInTable(marker.name,lat,lng);  
           drawPath();
           updateTotalDist(marker);
@@ -405,10 +412,24 @@ function callDrag(marker,drag_end=0) {
 }
 
 
+function updateGeoInGlobalGpx(m,lat,lng)
+{           
+    n = m.idx.split('_');
+    
+    id = glob_gpx.findIndex(x => x.name === n[0]);
+
+    console.log("@@ updateGeoInGlobalGpx=", id, m.name, m.idx, lat,lng);
+    
+    glob_gpx[id].points[n[1]].lat = lat;
+    glob_gpx[id].points[n[1]].lng = lng;
+    
+//    $.each(glob_gpx , function( ) {   });   
+}
+
 function updateTotalDist(mname)
 {
     console.log("@@ updateTotalDist=",mname);
-    show(mname.idx);
+//    show(mname.idx);
 //    dist = ((r>0) ? ""+dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>":"");
 }
 
@@ -1018,7 +1039,7 @@ function refreshTrans ()
         hmOpacity = tval/100;
         $('div.heatmapdiv').css({ opacity: hmOpacity });
 //            $("#slider_transperency" ).find(".ui-slider-handle").text(tval);
-        $('span.ui-slider-handle').css({'padding':'0px', 'display': 'inline-block'})
+        $('span.ui-slider-handle').css({'display': 'inline-block'})
                                    .html("<div>"+tval+"</div>");
 //           console.log("@@ tval",tval );    
 }
@@ -1028,3 +1049,4 @@ toggle = function(s=1) {
     $('#toggleHM').val( $('#toggleHM').val() == "Show HM" ? "Hide HM" : "Show HM");  
 //    console.log("@@ toggle v=", $('#toggleHM').val() );
 };
+
