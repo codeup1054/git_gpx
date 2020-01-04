@@ -1,0 +1,17 @@
+#AuthType Basic   
+#AuthName "Private zone. Only for administrator!"
+#require valid-user 
+#AuthUserFile  	/var/www/vhosts/opendatahub.ru/.htpasswd
+#Options -Indexes
+#@ErrorDocument 404 /404.php
+
+RewriteEngine on
+
+#RewriteRule "/(.*)/(.*)/(.*)/" "mode_r.php?x=$1&y=$2&z=$3" [L]
+
+RewriteRule "/(.*)/(.*)/(.*)/" "strava.php?z=$1&x=$2&y=$3" [L]
+
+
+
+
+
