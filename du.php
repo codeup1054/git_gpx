@@ -1,3 +1,22 @@
+<html>
+<head>
+    <link href="gpx.css" rel="stylesheet" type="text/css" /> 
+</head>
+<style>
+ .cache td:nth-child(n+2):nth-child(-n+4){
+    text-align: right;
+ }
+ 
+ .cache td:nth-child(n+2):nth-child(-n+4) div{
+    display:inline-block; 
+    background-color:lightgray;
+    height:5px; 
+ }
+ 
+
+ 
+</style>
+
 <?php
 
 ini_set('display_errors', 1);
@@ -8,165 +27,175 @@ $now = time();
 $var = array();
 
 
+$time_start = $time_lap =  microtime(true);
+
+function tm($s = '')
+{
+    global $time_start, $time_lap;    
+    $t  = microtime(true);
+
+    if ($s == '') $time_start = microtime(true);
+    else printf("+%0.6f <sup>%0.3f %s</sup><sub>%s</sub><br/>", 
+                ($t - $time_lap), 
+                ($t - $time_start), 
+                date('M-d H:i:s', time()),
+                $s
+                );
+    
+    //print (": ".$s.", ".($t - $time_start));
+    
+    
+
+    $time_lap = $t; 
+}
+
+
+tm();
 
 $c_day_cnt = array();
-
-
-
-$du_size = ""; // размер подпапок 
-$io = popen ( '/usr/bin/du -sk ./img_cache/ | sort -k 2', 'r' );
-
-if ($io) {
-    while (($line = fgets($io, 4096)) !== false) {
-        $du_size .= "".str_replace("\t./img_cache/","-",$line);
-    }
-    fclose($io);
-} else {
-    // error opening the file.
-} 
-
-echo "<pre>".$du_size."</pre>";
+$cache_files = array();
 
 $du_size = ""; // размер подпапок 
-$io = popen ( '/usr/bin/du -sk ./img_cache/* | sort -k 2', 'r' );
+
+// find . -mmin -120 -type f  -exec ls -la {} + | awk '{s+=$5} END {print "Total SIZE: " s}'
+// $io = popen ( "cd ./img_cache/; find . -mmin -120 -type f -exec ls -l {} + | awk '{ print $5, $6 , $7, $8, $9 }'", 'r' );
+
+$io = popen ( "cd ./img_cache/; find . -mmin -120000 -type f -exec ls -l --time-style=+%s {} + | awk '{ print $5\"/\"$6\"/\"$7 }'", 'r' );
+
+tm("<br />01. get find");
+
+$total_size = 0;
+$total_cnt = 0;
 
 if ($io) {
-    while (($line = fgets($io, 4096)) !== false) {
-        $du_size .= "".str_replace("\t./img_cache/","-",$line);
+    while (($line = fgets($io, 200)) !== false) {
+//        $du_size .= "".str_replace("\t./img_cache/","-",$line);
+        $p = explode('/',$line);
+
+//        print ("<pre>".$line." ".print_r($p,1)."</pre>");
+//        print ("".$line."\n<br />");
+        $total_cnt++;
+        $total_size = $total_size+$p[0];
+        $s = $p[0]; // размер файла 
+        $t = $p[1]; // время 
+        $z = $p[3]; // zoom
+        $x = $p[4]; // x
+        $y = $p[5]; // y
         
+        $total_size_zoom[$z] = (isset($total_size_zoom[$z]))?$total_size_zoom[$z]+$s:$s;
         
-    }
+//        $delt = time()-strtotime ($l[1].' '.$l[2].' '.$l[3]);
+        $delt = time()-$p[1];
+
+        $d_c = d_color($delt);
+        
+        $bar[$z][$d_c] = (isset($bar[$z][$d_c]))?$bar[$z][$d_c]+1:1;
+        $size[$z][$d_c] = (isset($size[$z][$d_c]))?$size[$z][$d_c]+$s:$s;
+        
+        $cache_files[$z][$x][trim($y)] = 
+            array('fs' => $s, 
+                  'md' => $t,
+                  'delt' => $delt
+                   );
+                  
+//        print (trim($p[3])."\t".$l[0]."<br />");
+    
+        }
     fclose($io);
-} else {
+    } 
+    else 
+    {
     // error opening the file.
-} 
+    } 
 
 
-echo "<pre>".$du_size."</pre>";
+tm("02. create array");
 
+ksort($total_size_zoom);
+
+//echo "<br />cache_files = <pre>".print_r($cache_files,1)."<br /></pre>";
+//echo "<br />$total_cnt<br /><pre>size=".($total_size)."<br />".print_r($total_size_zoom,1)."</pre>";
+
+tm("03. ksort");
+
+$l = "";
+
+
+ksort($bar );
+$total_cnt = $total_size = 0;
+
+foreach($bar as $k => $v)
+{
+    $dv = "";
+    ksort($v);
+    $cnt = $l_size = 0 ;
+
+//tm("04. bar: $k");
+     
+    foreach ($v as $kk=>$vv)
+    {
+        $clr=substr($kk, 1);
+        $cnt += $vv;
+        $total_cnt += $vv;  
+        
+        $l_size += $size[$k][$kk];
+        $total_size += $size[$k][$kk];
+        
+        $dv .= "<div title='$vv' style='font-size:15px; display:inline-block; background-color:$clr; height:19px; width:".($vv/3 )." '>".$vv."</div>";
+    }
+
+    $mean_size = $l_size/$cnt;
+
+
+    $dv_cnt = "$cnt<br /><div title='$vv' style='width:".($cnt/50)." '></div>";
+
+    $dv_size = floor($l_size/1024)."<br /><div title='$vv' style='margin: auto;  background-color:lightgray; 
+                                      height:5px; width:".($l_size/1000000 )." '></div>";
+
+
+    $dv_mean_size = floor($mean_size)."<br /><div title='$vv' style='margin: auto;  background-color:lightgray; 
+                                      height:5px; width:".($mean_size/200 )." '></div>";
+
+
+   
+    $l .= "<tr>
+                <td>$k</td>
+                <td>$dv_cnt</td>
+                <td>$dv_size</td>
+                <td>$dv_mean_size</td>
+                <td style='background:url(bkg.png);'>".$dv."</td>
+            </tr>";
+    
+    
+    
+}
+
+
+$dv = "<div title='$vv' style='font-size:15px; display:inline-block; background-color:$clr; height:19px; width:".($vv/3 )." '>".$vv."</div>";
+echo "<table class='stab cache'>
+<tr><td>№</td>
+    <td>Количество</td>
+    <td>Размер</td>
+    <td>Ср. размер</td>
+    <td>Диаграмма</td>
+</tr>
+
+$l
+<tr><td>Total</td>
+    <td>$total_cnt</td>
+    <td>".floor($total_size/1024)."</td>
+    <td>".floor($total_size/$total_cnt)."</td>
+    <td></td>
+</tr>
+</table>";
+
+tm("05. echo table");
 
 $files = glob('./img_cache/*');
-
-//print_r ($files);
-
-$lines = "";
-$total_cnt=0;
-
 print_r (usort($files, 'cmp'));
 
 
-$col = array(
-'2020-01-04' => 'rgb(0,150,0)', 
-'2020-01-05' => 'rgb(50,200,15)', 
-'2020-01-06' => 'rgb(200,250,20)', 
-'2020-01-07' => 'rgb(250,100,20)',
-'2020-01-08' => 'rgb(220,50,20)',
-'0' => 'rgb(0,150,0)', 
-'1' => 'rgb(50,200,15)', 
-'2' => 'rgb(200,250,20)', 
-'3' => 'rgb(250,100,20)' 
-);
-
-foreach($files as $k=>$v)
-{
-    $filecount = file_cnt($v);
-    
-    $sub_cnt = 0;
-    
-    foreach ($filecount['files'] as $kk=>$vv)
-    {   
-        $cnt3 = file_cnt($vv);
-        $sub_cnt += $cnt3['cnt'];
-    }     
-
-//    print ($v.": ".print_r ( $c_day_cnt , 1)."<br />" );
-    
-    $dv = $dv2 = "";
-    
-    ksort($c_day_cnt[$v]);
-    
-    foreach($c_day_cnt[$v] as $kk=>$vv)
-    {
-//        $dv .= "<div title='$kk' style='font-size:15px; display:inline-block; background-color:".$col[$kk]."; height:19px; width:".($vv/7 )." '>".$vv."</div>";
-    }
-
-    krsort($c_day_cnt[$v."_"]);
-    
-    foreach($c_day_cnt[$v."_"] as $kk=>$vv)
-    {   
-        $clr=substr($kk, 1);
-        $dv2 .= "<div title='$kk' style='font-size:15px; display:inline-block; background-color:$clr; height:19px; width:".($vv/7 )." '>".$vv."</div>";
-    }
-
-    
-    $total_cnt += $sub_cnt; 
-    
-    $lines .="<tr>
-                <td>$v</td>
-                <td>".( $filecount['cnt'] )."</td>
-                <td>".( $sub_cnt )."</td>
-                <td style='background:url(bkg.png);'>".$dv2."</td>
-            </tr>";
-    
-} 
-
-
-// print_r($c_day_cnt); 
-
-
-// <td><div style='background-color:green; height:7px; width:".($sub_cnt/10)." '></div></td>
-
-
-print "<table><tr><td>$total_cnt</td>
-       </tr>".$lines."</table>";
-
-
-function file_cnt($f)
-{
-    
-    global $c_day_cnt;
-    global $now, $var;
-    
-    $files=glob($f ."/*");
-    
-    
-    foreach( $files as $k=>$v)
-    {
-      
-      $f_a = explode("/",$f);
-      
-      $f_root = $f_a[0]."/".$f_a[1]."/".$f_a[2]; 
-
-      $fl  = $f_root;
-      $t = date ("Y-m-d", filemtime($f));  
-      $c_day_cnt[$fl][$t] = (isset($c_day_cnt[$fl][$t]))?$c_day_cnt[$fl][$t]+1 : 0 ;
-      
-    
-      $now = time();  
-      
-      $fl  = $f_root."_";
-      $t =  floor(($now - filemtime($f))/60);
-      
-      
-      if  ($t < 0)   $t1 = '1rgb(10,0,0)';
-      elseif  ($t < 15)   $t1 = '1rgb(200,0,0)';
-      elseif ($t < 60) $t1 = '2rgb(255,70,20)';
-      elseif ($t < 60*6) $t1 = '3rgb(250,240,10)';
-      elseif ($t < 60*24) $t1 = '4rgb(100,230,10)';
-      elseif ($t < 60*24*2) $t1 = '5rgb(30,180,15)';
-      else $t1 = '6rgb(50,130,115)';
-        
-      $c_day_cnt[$fl][$t1] = (isset($c_day_cnt[$fl][$t1]))? $c_day_cnt[$fl][$t1]+1:0;
-//      $c_day_cnt[$fl][$t] = (isset($c_day_cnt[$fl][$t]))? $c_day_cnt[$fl][$t]+1:0;
-
-    }
-
-
-
-    $filecount = count( $files );
-    return array("cnt"=>$filecount, 'files' => $files, "c_day" => $c_day_cnt);
-}
-
+tm("06. >>>>");
 
 function cmp($a1, $b1) {
     
@@ -182,5 +211,20 @@ function cmp($a1, $b1) {
     }
 }
 
+function d_color($t)
+{           
+      $t /= 60; 
+      if  ($t < 0)          return '0rgb( 10,  0,  0)';
+      elseif  ($t < 30)     return '1rgb(200,  0,  0)';
+      elseif ($t < 60*6)      return '2rgb(255, 110, 20)';
+      elseif ($t < 60*24)    return '3rgb(250,250, 10)';
+      elseif ($t < 60*24*2)   return '4rgb(100,230, 10)';
+      elseif ($t < 60*24*5) return '5rgb( 30,180, 15)';
+      elseif ($t < 60*24*14) return '6rgb( 50,150,125)';
+                            return '7rgb( 150,180,160)';
+
+}
 
 ?>
+
+</html>
