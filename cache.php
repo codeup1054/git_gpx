@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script type="text/javascript" src="js/cookie/jquery.cookie.js"></script>
+  
     <script type="text/javascript" src="js/google_sheets_api.js"></script>
     <script src="js/gpx.js"></script> 
 <!-- chart and elevation -->
@@ -201,14 +201,12 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
     <div class="clear"></div>
 </div>
 
+<div id="elevation-chart" ></div>
+
 <div id="floating-panel">
 <!--      <input id='toggleHM' type="button" value="Hide HM" onclick="toggle();"></input> -->
       <div id="slider_transperency"></div>
 </div>
-
-
-<div id="elevation-chart" ></div>
-
 
 
 <style>

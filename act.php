@@ -9,10 +9,12 @@ $adata = "{data:'test'}";
 
 $data = (isset ($_POST["data"]))? $_POST["data"] : json_decode($adata) ;
 
-print "\n<br />Check data=".isJson($data )." data". print_r(json_decode($data),1) ;
+//print_r(json_decode($data));
+
+//print "\n<br />Check data". print_r(json_decode($data),1) ;
 
 
-if( isJson($data) )
+if( isset($data)  )
 {
     $myFile = "data/gpx.json";
     $fh = fopen($myFile, 'w') or die("can't open file");

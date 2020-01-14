@@ -1,8 +1,53 @@
+//document.write('<script type="text/javascript" src="js/cookie/jquery.cookie.js"></script>');
+
 var map;
-var hmOpacity = 0.5;
 var homeGeo = ["55.6442983","37.4959946"] // base
-var homeGeo = ["55.7","37.32"]
-var zoom = 11;
+
+param = document.location.hash || $.cookie('hash') || "55.644,37.495,11,0.90"
+
+var p = param.split(',');
+
+var homeGeo = ( isNaN(parseFloat(p[0].substr(1))) || isNaN(parseFloat(p[1])) )
+                ? ["55.7","37.32"] : [p[0].substr(1), p[1]];
+//var homeGeo = [hashGeo[0].substr(1),hashGeo[1]]
+
+var zoom = p[2]*1 || 11 ;
+var hmOpacity = p[3] || 0.9;
+var dinfo = p[4] || 0;
+
+
+//var zoom = hashGeo[2].substr(0, hashGeo[2].length - 1);
+
+console.log ("@@ hashGeo", $.cookie('hash'), p, homeGeo, zoom, document.location );
+
+
+var tile_cnt = 0 ;
+
+
+window.tm = function (s="")
+{
+    var output = "";
+
+// Remember when we started
+   if (s == "")
+   {
+    lap = start = new Date().getTime();
+    
+    var date = new Date();
+    var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+    console.log("Старт: %s",str);        
+    }
+    else 
+    {
+    var end = new Date().getTime();
+    console.log("%s %s %s",end - start,end - lap,s);        
+    lap = end; 
+    }
+};
+
+tm();
+
 
 // Класс для обработки массивов маркеров
 
@@ -20,7 +65,7 @@ class _markers {
      var self = this;
     $(this.d).each(function(k,m) {
         
-//        console.log("@@ addMarker", m);
+//      console.log("@@ addMarker", m);
         
         if( isFloat(m.lat*1) && isFloat(m.lng*1) )
         self.placeMarker(m);}) 
@@ -29,7 +74,9 @@ class _markers {
   
   //отрисовать маркер на карте
   placeMarker(m) {
-
+    
+     console.log("@@ placeMarker", m);
+     
      var dist = getDistanceFromLatLonInKm(m.lat, m.lng );
 
      var dist = m.dist;
@@ -47,7 +94,7 @@ class _markers {
                     + '<time class="time" contenteditable=True><br />'+ m.time+'</time>'
                     + " </div>"; //label text
 */    
-    //    console.log("@@@ color", m );
+//     console.log("@@@ color", m );
     
      var pos = new google.maps.LatLng(m.lat, m.lng);    
         
@@ -60,10 +107,10 @@ class _markers {
                         </defs>\
                         <path  fill-opacity=".3" stroke-width="0.5" fill="#f40" stroke="#f40" id="svg_1" d="m14.685496,6.570998c0,3.790972 -7.068536,8.225084 -7.068536,8.225084s-7.302785,-4.433682 -7.302785,-8.282617c0,-3.651441 2.918311,-6.359523 6.88748,-6.359523c3.968235,0 7.483841,2.76561 7.483841,6.417056z" /></svg>';
     
-     switch (m.group)
+     switch (m.gpxSet)
         {
             case "Велобайк":
-                   console.log("@@ placeMarker", m.group);
+                   console.log("@@ placeMarker", m.gpxSet);
                    icon = {
                         path: google.maps.SymbolPath.CIRCLE,
                         scale: 2.5,
@@ -98,71 +145,38 @@ class _markers {
                              </svg>'
                     };
                     
-                    var markerTitle = dist.toFixed(2);
+//                    var markerTitle = dist.toFixed(2);
                     var markerTitle = m.name;
+                    
+                    
+                    var url = m.url || 'data:image/svg+xml;utf-8, \
+      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+        <circle fill="%232255aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
+        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
+        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+markerTitle+'</text>\
+      </svg>';
                     
                     var icon = {
                         anchor: new google.maps.Point(14, 14),
                         size1: new google.maps.Size(60,30.26),
-                        url: 'data:image/svg+xml;utf-8, \
-      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
-        <circle fill="%232255aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="4"/> \
-        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
-        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+markerTitle+'</text>\
-      </svg>'
+                        url: url
 
-//        <text stroke="null" id="svg_2" x="18" y="17" font-family="Arial, sans-serif" text-anchor="middle" font-size="9" fill="#0f0">нет</text>\
-//        <path fill="rgb(255, 180, 0)" stroke="white" stroke-width="1.5" d="M3.5 3.5h25v25h-25z" >ttt</path> \
-
-                    }
-                                    
-        }
-
-//var anSVGPathString = "M61.2849 48.0244C61.2849 64.3164 48.0769 77.5244 31.7849 77.5244C15.4929 77.5244 2.28491 64.3164 2.28491 48.0244C2.28491 34.9504 22.2469 12.2714 29.6169 3.82141C31.1029 2.11741 33.7479 2.12141 35.2349 3.82441C42.6149 12.2764 61.2849 34.9514 61.2849 48.0244Z"
-
-
+                }
+    }
         
        var marker = new google.maps.Marker({
-            name: m.name,
-            title: m.name,
+            name: m.name+"n",
+            title: markerTitle,
             dist:dist,
             position: pos,
             map: map,
-            idx: m.idx,
+            m: m,
+            gpxSet: m.gpxSet,
+            id: m.idx,
             draggable: true,
             icon: icon,
           });
       
-/*                 
-      var dist_icon =  {
-      path: "M-10,0a20,20 0 1,0 40,0a20,20 0 1,0 -40,0", // circle
-      path: "M 0 0 L 20 0 L 20 10 L 0 10 z",
-      fillColor: '#fefefe',
-      strokeOpacity: 0, 
-      fillOpacity: .4,
-      anchor: new google.maps.Point(-7, 10),
-      strokeWeight: 1,
-      labelOrigin: new google.maps.Point(10, 6),
-      scale: 1,
-      text: "57"
-    } 
-       
-        var base_dist  = new google.maps.Marker({
-            position: marker.getPosition(),
-            map: map,
-            icon: dist_icon,
-            label: {
-              text: ((dist+"").length>4)? dist.toFixed(1)+"":dist+"",
-              color: '#034',
-              fontSize: '9px',
-              fontWeight: 'normal'
-            }
-          });
-        
-        
-          
-        base_dist.bindTo("position", marker);
-*/        
        
         google.maps.event.addListener(marker, 'click', function () { markerClick(this);});
         google.maps.event.addListener(marker, 'dblclick', function () { markerDel(this);});
@@ -403,32 +417,61 @@ function callDrag(marker,drag_end=0) {
          // map.panTo(marker.position);
 //          console.log("@@ updateTotalDist=", marker);
           updateGeoInGlobalGpx(marker,lat,lng);
-          
-          updateGeoInTable(marker.name,lat,lng);  
+          updateGeoInTable(marker,lat,lng);
+          updateMarkerIcon(marker);  
           drawPath();
           updateTotalDist(marker);
         }
   };
 }
 
+function updateMarkerIcon(m)
+{
+
+m.setMap(null);
+console.log("@@ updateMarkerIcon", m);
+
+
+url = 'data:image/svg+xml;utf-8, \
+      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+        <circle fill="%23ff55aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
+        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
+        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+m.title+'</text>\
+      </svg>';
+
+new_m = m.m; 
+new_m.url = url;
+new_m.lat = m.position.lat();
+new_m.lng = m.position.lng();
+
+markersArray.push(new_m); // заменить на update Marker
+markersArray.placeMarker(new_m);
+
+}  
+
+
+
 
 function updateGeoInGlobalGpx(m,lat,lng)
 {           
-    n = m.idx.split('_');
-    
-    id = glob_gpx.findIndex(x => x.name === n[0]);
+    n = m.id.split('_');
+    id = n[0]
 
-    console.log("@@ updateGeoInGlobalGpx=", id, m.name, m.idx, lat,lng);
-    
-    glob_gpx[id].points[n[1]].lat = lat;
-    glob_gpx[id].points[n[1]].lng = lng;
-    
+    console.log("@@ updateGeoInGlobalGpx=", m, n, lat,lng);
+
+//    id = glob_gpx.findIndex(x => x.name === n[0]);
+//    glob_gpx[id].points[n[1]].lat = lat;
+//    glob_gpx[id].points[n[1]].lng = lng;
+
+    glob_gpx[m.gpxSet].points[n[1]].lat = lat;
+    glob_gpx[m.gpxSet].points[n[1]].lng = lng;
+
 //    $.each(glob_gpx , function( ) {   });   
 }
 
 function updateTotalDist(mname)
 {
-    console.log("@@ updateTotalDist=",mname);
+//    console.log("@@ updateTotalDist=",mname);
 //    show(mname.idx);
 //    dist = ((r>0) ? ""+dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>":"");
 }
@@ -447,19 +490,13 @@ function selectCallback(infowindow)
 function markerClick(ob) {
     
     console.log("@@markerClik", ob.name);
-    tdCont = $('.datasets td:contains("'+ob.name+'")')
-    trCont = tdCont.parent("tr");
     trCont.addClass(); 
     $('.rowselect').toggleClass('rowselect');
     trCont.toggleClass('rowselect');
 //    $("body").scrollTo(tdgeos);
     
-    var $par = $("#left_panel"), // The ".test" parent element
-    $el = trCont;               // The clicked "p" element
-  
-    $par.animate({
-        scrollTop: $el.offset().top + $par.scrollTop() -30
-      }, 800);
+    
+    gpxPoinsTableSlide(ob.name); // The clicked "p" element
     
 //    $([document.documentElement, document.body]).animate({
 //        scrollTop: trCont.offset().top -100
@@ -472,6 +509,14 @@ function markerClick(ob) {
 //    $('.idx'+idx).toggleClass('bselect');
     
     }
+
+function gpxPoinsTableSlide(id)
+{ 
+    var frame = $("#left_panel"); // The ".test" parent element
+    frame.animate({
+        scrollTop: $("#gpx_set_table_"+id).offset().top + frame.scrollTop() -5
+      }, 300);
+}
  
 function markerDel(ob){
     
@@ -502,17 +547,16 @@ var polyline;
      
 function initMap() {
 
-  var mapOptions = {
+var mapOptions = {
     zoom: zoom,
 //    mapTypeId: 'satellite',
     center: new google.maps.LatLng(homeGeo[0],homeGeo[1])
   };
 
-    map = new google.maps.Map(document.getElementById('map'), mapOptions );
-    
-    google.load("visualization", "1", {packages: ["chart"]});
+   map = new google.maps.Map(document.getElementById('map'), mapOptions );
+   google.load("visualization", "1", {packages: ["chart"]});
         // Create an ElevationService.
-    elevator = new google.maps.ElevationService();
+   elevator = new google.maps.ElevationService();
     
     
    map.overlayMapTypes.insertAt(
@@ -525,9 +569,21 @@ function initMap() {
         rect.setOptions({bounds:new google.maps.LatLngBounds(new google.maps.LatLng(b.sw.lat,b.sw.lng),new google.maps.LatLng(b.ne.lat,b.ne.lng)),
                       map:map})
       });
-      google.maps.event.addListener(map,'zoom_changed',function(){
+   
+   google.maps.event.addListener(map,'zoom_changed',function(){
+         $('#zoom_info').html(this.getZoom());
+         
+         ifMapChanged();
+
          rect.setMap(null);
+
       });
+
+
+   google.maps.event.addListener(map,'center_changed',function(){
+         ifMapChanged();
+      });
+
   
    var controlDiv =$("#floating-panel");
    controlDiv.index = 1;
@@ -611,11 +667,18 @@ return function(results, status) {
 };
 }
 
-function updateGeoInTable(addr,lat,lng)
+function updateGeoInTable(m,lat,lng)
 {
-    tdgeos = $('.datasets td:contains('+addr+')').parent("tr").find("td").slice(4,7)
+//    tdgeos = $('.datasets td:contains('+addr+')').parent("tr").find("td").slice(4,7)
+//    row = $("#")
+    rselect = '[dataset="'+m.gpxSet+'"] [id="'+m.id+'"]';
+    tdgeos = $(rselect).find("td").slice(4,7)
+
+    console.log("@@ tdgeos", m, rselect  ,tdgeos);
+
+    tdgeos.addClass('modified_geo');
+    
     $(tdgeos[0]).text(lat);
-    $(tdgeos[0]).toggleClass('modified_geo');
     $(tdgeos[1]).text(lng);
     $(tdgeos[2]).text(getDistanceFromLatLonInKm(lat,lng));
 }
@@ -976,6 +1039,9 @@ function CoordMapType(tileSize) {
   this.tileSize = tileSize;
 }
 
+
+
+
 CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
 var tile=MERCATOR.normalizeTile({x:coord.x,y:coord.y,z:zoom}),
     tileBounds=MERCATOR.getTileBounds(tile);
@@ -984,10 +1050,19 @@ var tile=MERCATOR.normalizeTile({x:coord.x,y:coord.y,z:zoom}),
   
   zoom = (zoom<17)? zoom : 16;
   
-  srcImage  = 'https://anygis.ru/api/v1/Tracks_Strava_All/'+tile.x+
-  '/'+tile.y+'/'+zoom;
   
-//  console.log("@@@ ",srcImage );
+// AnyGis  
+  srcImage  = 'https://anygis.ru/api/v1/Tracks_Strava_All/'+tile.x+'/'+tile.y+'/'+zoom;
+
+// ODH cache
+  srcImage  = 'http://msp.opendatahub.ru/gpx/img_cache/'+zoom+'/'+tile.x+'/'+tile.y+'.png';
+
+// ODH strava
+  srcImageStrava  = 'http://msp.opendatahub.ru/gpx/strava.php?z='+zoom+'&x='+tile.x+'&y='+tile.y;
+
+
+//tm("@@@ srcImage " + (tile_cnt++)+":" + srcImage);
+
 /*  
   div.innerHTML = 
 '<pre><strong>tile:\n['+tile.x+','+tile.y+']</strong>\
@@ -1002,33 +1077,79 @@ var tile=MERCATOR.normalizeTile({x:coord.x,y:coord.y,z:zoom}),
   div.style.backgroundImage = "url('"+srcImage+"')";;
 */
   
-  div.innerHTML ='';
+  var filename = document.location.href.replace(/^.*[\\\/]/, '')
+  
+  //console.log("@@ document.location.href", tileBounds );
+  
+  switch ( dinfo )
+  {
+    case '1' : tile_html = "<div style='background-color:rgba(255,255,255,0.75); width:100px;'>"+zoom+','+tile.x+','+tile.y+"</div>";
+            break;    
+    case '2' : tile_html = "<div style='background-color:rgba(255,255,255,0.75); font-size:15px; color:blue; width:100px;'>"
+                            +zoom+','
+                            +tile.x+','
+                            +tile.y+'<br />'
+                            + tileBounds.ne.lat.toFixed(4)+','
+                            + tileBounds.ne.lng.toFixed(4)+','
+                            +"</div>";
+            break;
+    default:        
+            tile_html = "-";
+  }
+   
+  div.innerHTML = tile_html;
   div.style.width = this.tileSize.width + 'px';
   div.style.height = this.tileSize.height + 'px';
   div.style.borderWidth = '0px';
   div.className = 'heatmapdiv';
-//  div.style.fontSize = '10';
-//  div.style.borderStyle = 'solid';
-//  div.style.borderWidth = '1px';
-//  div.style.borderColor = '#AAAAAA';
-  div.style.backgroundImage = "url('"+srcImage+"')";
+  div.style.fontSize = '10';
+  div.style.color = 'red';
+  div.style.borderStyle = 'solid';
+  div.style.borderWidth = '1px';
+  div.style.borderColor = '#AAAAAA';
   div.style.opacity =hmOpacity;
+  
+
+//srcImage  = 'http://msp.opendatahub.ru/gpx/strava.php?z='+zoom+'&x='+tile.x+'&y='+tile.y;
+//  srcImage  = 'http://msp.opendatahub.ru/gpx/strava.php?z='+zoom+'&x='+tile.x+'&y='+tile.y;
+
+  div.style.backgroundImage = "url('"+srcImage+"')";
+
+
+  $.get(srcImageStrava)
+        .done(function() { 
+//              srcImage  = 'http://msp.opendatahub.ru/gpx/strava.php?z='+zoom+'&x='+tile.x+'&y='+tile.y;
+//              srcImage  = 'http://msp.opendatahub.ru/gpx/img_cache/'+zoom+'/'+tile.x+'/'+tile.y+'.png';
+//              div.style.backgroundImage = "url('"+srcImage+"')";
+//              div.innerHTML =srcImage;
+
+      }).fail(function() { 
+//              srcImage  = 'http://msp.opendatahub.ru/gpx/strava.php?z='+zoom+'&x='+tile.x+'&y='+tile.y;
+//              div.style.backgroundImage = "url('"+srcImage+"')";
+        });
+
 
   return div;
 };
 
 
+
+
+
 $( function() {
 $( "#slider_transperency" ).slider(
-{
-  orientation: "horizontal",
-  range: "min",
-  max: 100,
-  value: 50,
-  slide: refreshTrans,
-  change: refreshTrans
+    {
+      orientation: "horizontal",
+      range: "min",
+      max: 100,
+      value: hmOpacity*100,
+      slide: refreshTrans,
+      change: refreshTrans
+    });
+ $('span.ui-slider-handle').css({'display': 'inline-block'})
+                                   .html("<div>"+hmOpacity*100+"</div>"); 
+                                   
 });
-} );
 
 function refreshTrans ()
 {
@@ -1042,6 +1163,10 @@ function refreshTrans ()
         $('span.ui-slider-handle').css({'display': 'inline-block'})
                                    .html("<div>"+tval+"</div>");
 //           console.log("@@ tval",tval );    
+
+   ifMapChanged();                                 
+
+
 }
 
 toggle = function(s=1) {
@@ -1050,3 +1175,25 @@ toggle = function(s=1) {
 //    console.log("@@ toggle v=", $('#toggleHM').val() );
 };
 
+function ifMapChanged() 
+{       
+    
+//        console.log("@@ map",map);
+         c = map.getCenter();   
+         location_search = c.lat().toFixed(3)+','
+                    + c.lng().toFixed(3)
+                    +','+ map.getZoom()
+                    +','+ hmOpacity
+                    +','+ dinfo;   
+            
+         href = window.location.origin+"/gpx/#"+location_search; 
+//         console.log("@@ href ", href );
+         window.location.href = href;
+         
+         $.cookie('hash', '#'+location_search);
+         
+//         console.log("@@ location_search", location_search);
+
+// Read the cookie
+
+}

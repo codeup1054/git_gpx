@@ -8,144 +8,126 @@
 {ID} = CloudFront-Key-Pair-Id
 {Sig} = CloudFront-Signature
 {P} = CloudFront-Policy
-
-2472/1281/12
-
-$username='solid1054@gmail.com';
-$password='450@163ava';
-$URL='https://heatmap-external-b.strava.com/';
-$URL='https://strava.com/';
-
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL,$URL);
-curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout after 30 seconds
-curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
-$result=curl_exec ($ch);
-$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);   //get status code
-//curl_close ($ch);
-
-
-function curl_redirect_exec($ch, &$redirects, $curlopt_header = false) {
-    curl_setopt($ch, CURLOPT_HEADER, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $data = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    print ('data='.$data.",".$http_code );
-
-    if ($http_code == 301 || $http_code == 302) {
-        list($header) = explode("\r\n\r\n", $data, 2);
-        
-        $matches = array();
-        preg_match('/(Location:|URI:)(.*?)\n/', $header, $matches);
-        $url = trim(array_pop($matches));
-        $url_parsed = parse_url($url);
-        
-        print ("<br />url=".print_r($url_parsed,1)."<br />");
-        
-        if (isset($url_parsed)) {
-            curl_setopt($ch, CURLOPT_URL, $url);
-            $redirects++;
-            return curl_redirect_exec($ch, $redirects);
-        }
-    }
-    if ($curlopt_header)
-        return $data;
-    else {
-        list(,$body) = explode("\r\n\r\n", $data, 2);
-        return $body;
- }
- }
- 
-$red = 1;
-print ("curl=".$status_code.", ".curl_redirect_exec($ch, $red , $curlopt_header = false ));
-curl_close ($ch);
-
 */
 
-
-function gets($url){
-    $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36';
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_setopt($ch, CURLOPT_VERBOSE, 0);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
-    curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
-    
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-//    print ('data='.$data.",".$http_code );
-
-//    if ($http_code == 301 || $http_code == 302) {
-//        list($header) = explode("\r\n\r\n", $data, 2);
-//    }
-    
-    $output = curl_exec($ch);
-    curl_close($ch);
-    return $output;
-}
-
-
-
-
-
-$img = 'https://anygis.ru/api/v1/Tracks_Strava_Ride/13/4950/2566.png?px=256';
-$img_static = 'https://heatmap-external-a.strava.com/tiles-auth/all/hot/14/9901/5132.png?px=256&Signature=dHHhv0RrKOD4J3zmNy31LWJBNoq-eDHqmoy3UWKyvbPc0lWF2CVQO3QnDkW4Mk8MSrIP5C4~bFdhw-ZM7ujk2iaA9UXRlT7nLK0yzjQLTi99VOf-ToFaisg4lmPqfKlbVYoRo6~cSdlZWj5RzMykoxziSsFhY5V4sAdVWQxz732IilR~ROky5h4FTEUIJisCyVQUpuC0fLVehIdteE0Zt9TtN7GKFbNieSkDFm-PibtqTPIoMEeJd1MlYcdnLIzQUSeMPVBNogXv-oZ3yeXMmuJMJTmDdzBJlar-~nAf~HyggeyI92V2WedGa-jgl3DijXHxsiH79rwnNWtSnjiH6Q__&Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3ODkyNTQ1MX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTc3NzAxNDUxfX19XX0_';
-
-$strava_url = 'https://heatmap-external-a.strava.com/tiles-auth/all/hot';
-$Signature='Signature=dHHhv0RrKOD4J3zmNy31LWJBNoq-eDHqmoy3UWKyvbPc0lWF2CVQO3QnDkW4Mk8MSrIP5C4~bFdhw-ZM7ujk2iaA9UXRlT7nLK0yzjQLTi99VOf-ToFaisg4lmPqfKlbVYoRo6~cSdlZWj5RzMykoxziSsFhY5V4sAdVWQxz732IilR~ROky5h4FTEUIJisCyVQUpuC0fLVehIdteE0Zt9TtN7GKFbNieSkDFm-PibtqTPIoMEeJd1MlYcdnLIzQUSeMPVBNogXv-oZ3yeXMmuJMJTmDdzBJlar-~nAf~HyggeyI92V2WedGa-jgl3DijXHxsiH79rwnNWtSnjiH6Q__';
-$Key='Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3ODkyNTQ1MX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTc3NzAxNDUxfX19XX0_';
-
-//print ($img);
-
-//Key-Pair-Id
-//.png?px=256
+//$img = 'https://anygis.ru/api/v1/Tracks_Strava_Ride/13/4950/2566.png?px=256';
+//$img_static = 'https://heatmap-external-a.strava.com/tiles-auth/all/hot/14/9901/5132.png?px=256&Signature=dHHhv0RrKOD4J3zmNy31LWJBNoq-eDHqmoy3UWKyvbPc0lWF2CVQO3QnDkW4Mk8MSrIP5C4~bFdhw-ZM7ujk2iaA9UXRlT7nLK0yzjQLTi99VOf-ToFaisg4lmPqfKlbVYoRo6~cSdlZWj5RzMykoxziSsFhY5V4sAdVWQxz732IilR~ROky5h4FTEUIJisCyVQUpuC0fLVehIdteE0Zt9TtN7GKFbNieSkDFm-PibtqTPIoMEeJd1MlYcdnLIzQUSeMPVBNogXv-oZ3yeXMmuJMJTmDdzBJlar-~nAf~HyggeyI92V2WedGa-jgl3DijXHxsiH79rwnNWtSnjiH6Q__&Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3ODkyNTQ1MX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTc3NzAxNDUxfX19XX0_';
 
 
 $z = (isset($_GET['z']))?$_GET['z']:'14';
 $x = (isset($_GET['x']))?$_GET['x']:'9901';
 $y = (isset($_GET['y']))? $_GET['y'] :'5132';
+$watermark = (isset($_GET['$watermark']))? $_GET['$watermark'] :0;
+
+$img = "$strava_url/$z/$x/$y.png?px=256&$Signature&$Key";     
+$img_cache_path = "img_cache/$z/$x/$y.png";
+
+if (file_exists($img_cache_path))
+{
+    $image = new Imagick($img_cache_path);
+    echo $image;
+}
+
+else
+{
+    loadFromStrava($z,$x,$y);
+}
 
 
+
+function loadFromStrava($z,$x,$y)
+{
+
+$strava_url = 'https://heatmap-external-a.strava.com/tiles-auth/all/hot';
+$Signature='Signature=dHHhv0RrKOD4J3zmNy31LWJBNoq-eDHqmoy3UWKyvbPc0lWF2CVQO3QnDkW4Mk8MSrIP5C4~bFdhw-ZM7ujk2iaA9UXRlT7nLK0yzjQLTi99VOf-ToFaisg4lmPqfKlbVYoRo6~cSdlZWj5RzMykoxziSsFhY5V4sAdVWQxz732IilR~ROky5h4FTEUIJisCyVQUpuC0fLVehIdteE0Zt9TtN7GKFbNieSkDFm-PibtqTPIoMEeJd1MlYcdnLIzQUSeMPVBNogXv-oZ3yeXMmuJMJTmDdzBJlar-~nAf~HyggeyI92V2WedGa-jgl3DijXHxsiH79rwnNWtSnjiH6Q__';
+$Key='Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3ODkyNTQ1MX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTc3NzAxNDUxfX19XX0_';
+
+
+$Signature='Signature=GK6DjcUbbgwgn5dtNvaUfBS4h0ZahhyzwJlZ7wn6ghGeM8SG97gUKrev~H5wcgE91uwZfftBuHmLIDMBv0oDuzlsFu-Mm0g4xDpDfVkeQN5FDxxFsqwTOqX13Z4UMW1XuY6UrM9PYcjZDMMmIS3pzuco-i3AVJNH-6RMjeLKMgJUOGT1FKiUiff8V6~DXX0~CVXQT8yr9ZdX529YGiXhrMi0SR7R64sgXQRYohPUSPFepHc0kvfFUYsKa3KBK5GDF4yr0IJI-iIuw7HI3YI2fyoU8h4DZkXXPMxLLpRYiJ-FQ2qRL6M-h6FvO-bV2N864VtGtZWNGbuWoGCtjeJj9A__';
+$Key='Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3OTI5NjE0OX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTc4MDcyMTQ5fX19XX0_';
+
+$img = "$strava_url/$z/$x/$y.png?px=256&$Signature&$Key";     
+//$img = "https://anygis.ru/api/v1/Tracks_Strava_Ride/$x/$y/$z.png?px=256";
+
+$img_cache_path = "img_cache/$z/$x/$y.png";
+
+$path_parts = pathinfo($img_cache_path);
+//$path_parts_print_r = print_r($path_parts,1); 
+
+if (!is_dir($path_parts['dirname'])) {  // ************ 2020 Create directory *****************
+  mkdir($path_parts['dirname'],0777, true);
+}
+
+
+// size of cache 
+// du -skh * | sort -n
+
+/*
+
+$io = popen ( '/usr/bin/du -skh ./img_cache ', 'r' ); //$io = popen ( '/usr/bin/du -skh '. $f .' | sort -n', 'r' );
+$size = fgets ( $io, 4096);
+pclose ( $io );
+
+
+$du_size = ""; // размер подпапок 
+$io = popen ( '/usr/bin/du -skh ./img_cache/* | sort -k 2', 'r' );
+
+if ($io) {
+    while (($line = fgets($io, 4096)) !== false) {
+        $du_size .= "".str_replace("\t./img_cache/","-",$line);
+    }
+    fclose($io);
+} else {
+    // error opening the file.
+} 
+
+pclose ( $io );
+*/
 
 header('Content-type: image/jpeg');
 
-$img = "$strava_url/$z/$x/$y.png?px=256&$Signature&$Key";     
+$img_str = $path_parts_print_r;
+
+$img_str = "".$z.",".$x.",".$y." | ".str_replace("\t./img_cache","",$size)."" ; //."-----------\n".$du_size;  
+$img_str = $z.",".$x.",".$y."-".str_replace("\t./img_cache","",$size);  
+
+$font = 'Helvetica';
+$watermark_text = new ImagickDraw();
+$watermark_text->setFillColor('blue');
+$watermark_text->setFont($font);
+$watermark_text->setFontSize(9);
+$watermark_text->setStrokeAntialias(true);
+$watermark_text->setStrokeColor('none');
+$watermark_text->setStrokeWidth(0);
+$watermark_text->setGravity(Imagick::GRAVITY_NORTHWEST);
+// Clone & set stroke attributes
+$watermark_outline = clone $watermark_text;
+$watermark_outline->setFillColor('none');
+$watermark_outline->setStrokeColor('rgba(255,255,255, 0.9)');
+$watermark_outline->setStrokeWidth(4);
+$watermark_outline->setStrokeAntialias(true);  //try with and without
+//$watermark_outline->setTextAntialias(true);  //try with and without
+// Set the text for both, and offset one to match stroke width
+$watermark_outline->annotation(0, 0, $img_str);
+$watermark_text->annotation(0, 0, $img_str);
+// Draw stroke, then text
+
+$image = new Imagick($img);
+//$image->setSize(200, 35);
+//$image->readImage('XC:LightGoldenrod');
 
 
 
+$image->writeImage($img_cache_path);
 
-/*
-echo isset($_GET['y'])."</br>".print_r($_GET,1)."<br />".$img."<br /><br />".$img_static."<br />***".(($img_static === $img)?'да':'нет');
-
-for ( $i=0;  $i <  strlen($img_static); $i++)
+if ($watermark )  // не используется в .get
 {
-echo $img_static[$i]."|".$img[$i]."|".(($img_static[$i] === $img[$i])?'да':'нет')."</br>";    
+    $image->drawImage($watermark_outline);
+    $image->drawImage($watermark_text);
 }
-*/
 
-    
-echo gets($img);
+echo $image;
 
-/*
-$img_cache_path = "cimg/$z/$x/$y.png";
-
-
-$path_parts = pathinfo($img_path);
-
-if (!is_dir('cimg/' . $path_parts['dirname'])) {
-  mkdir('cimg/' . $path_parts['dirname']);
 }
-*/
-
-//file_put_contents('cimg/'.$img_path , file_get_contents($img)); 
-
-
-//print ($img_path);
-
 
 ?>
