@@ -272,7 +272,7 @@ button.sign
         padding-left: 10px;
       }
 
-#slider_transperency span.ui-slider-handle /*регулятор прозрачности*/      
+#slider_transperency span.ui-slider-handle /* регулятор прозрачности */      
 {   font-size:9px; 
     top:-6px; 
     height:15px; 
