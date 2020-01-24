@@ -1492,10 +1492,13 @@ function clear_casche_rect()
         v.setMap(null);
         delete cache_area[k];
 //        console.log("@@ clear_casche_rect",Object.keys(cache_area).length);
+
     });
     
 /*    while(Object.keys(cache_area).length &&  break_cnt < 1000 ) {
+        
         break_cnt++;
+        
         console.log("@@ cache_area", cache_area[Object.keys(cache_area)[Object.keys(cache_area).length - 1]]);
         cache_area.pop().setMap(null); 
         }
@@ -1503,6 +1506,7 @@ function clear_casche_rect()
 }
 
 // >>>> Секция для обработки кнопок тулбара    
+
 // ****************  helpers *******************
 
 function heatMapColorforValue(value){

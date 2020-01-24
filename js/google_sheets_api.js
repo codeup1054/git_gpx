@@ -26,7 +26,7 @@ function makeApiCall(action) {
                     dataType : 'json',
                     async: false,
                     url: 'act.php',
-                    data: { data: json_gpx },
+                    data: { save_json: json_gpx },
                     success: function () {alert("Thanks!"); },
                     failure: function() {alert("Error!");}
                 });
@@ -40,7 +40,6 @@ function makeApiCall(action) {
       case "read_google":  
             gpxFromGoogle();
             break; 
-
 
       case "save_google":  
 
@@ -87,9 +86,11 @@ function makeApiCall(action) {
 
 function gpxFromJson()  
 {           
+//        return; 
+        
         glob_gpx = [];
         tm('start read JSON');
-        $.get({ url: 'data/gpx.json', cache: false },function(data) {
+        $.get({ url: '../data/gpx.json', cache: false },function(data) {
                console.log("@@ read_json ",data);
                glob_gpx = data;
                gpxSetNamesToTable(data);
@@ -597,7 +598,7 @@ function updateMarkersOnMap(id)
     
 //    $(".wp_panel").addClass('hide');
     
-    while(markers.length) { markers.pop().setMap(null);   }
+   while(markers.length) { markers.pop().setMap(null);   }
 
 
    if (id == 'all')

@@ -87,6 +87,64 @@ return $table;
 }
     
 
+//$st = getStations();
+
+
+
+
+$f_xml = file_get_contents('../data/Markers_2019-06-11.gpx', true);
+
+$xmlstr = <<<XML
+$f_xml
+XML;
+
+
+$gpx = new SimpleXMLElement($xmlstr);
+
+//print "<pre>".print_r ($gpx->wpt,1)."</pre>"; 
+
+//print_r ($gpx);
+$cols = $rows = $markers = array();
+
+$cnt=0;
+
+foreach ($gpx->wpt as $k=>$v)
+{
+    unset($cols);
+    
+    $lat1 = floatval($v->attributes()->lat);
+    $lon1 = floatval($v->attributes()->lon);
+
+    $lat2 = 55.6442983;
+    $lon2 = 37.4959946;
+
+    $dist = round(distance($lat1, $lon1, $lat2, $lon2, "K"),1);
+    
+    $cnt++;
+
+    $cols[] = $cnt;
+
+    $cols[] = $v->name;
+    $cols[] = $v->extensions->color;
+
+    $cols[] = $lat1;
+    $cols[] = $lon1;
+    
+     
+    $markers[] = array(
+            'lat' => $lat1, 
+            'lng' =>$lon1, 
+            'name' => (string) $v->name, 
+            'time' => (string) $v->time, 
+            'extensions' => $v->extensions
+            );  
+    
+    $cols[] = $dist;
+    $rows[] = "<tr class = 'row row$cnt' idx= '".($cnt-1)."' ><td>".implode("</td><td>",$cols)."</td></tr>";
+}
+
+//print_r ($markers);
+//echo $f_xml;
 
 function distance($lat1, $lon1, $lat2, $lon2, $unit) {
   if (($lat1 == $lat2) && ($lon1 == $lon2)) {
@@ -187,6 +245,7 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
     <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCqtLzdiGvGIu85wF1C7w4UKdUncnwgF0M&callback=initMap">
     </script>
+    
     <script async defer src="https://apis.google.com/js/api.js"
       onload="this.onload=function(){};handleClientLoad()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">

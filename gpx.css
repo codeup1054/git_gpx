@@ -4,6 +4,9 @@ position1: absolute;
 font-size: 10px;
 }
 
+.red {color:red; }
+.blue {color:blue; }
+
 .hide 
 {
  display: none;
