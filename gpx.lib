@@ -173,9 +173,14 @@ if ($gsql->connect_errno) {
 }
 
  
+$tm_on = 0; 
+ 
 function tm($s = '',$is_str=0)
 {
-    global $time_start, $time_lap;    
+    global $time_start, $time_lap, $tm_on;
+    
+    if (!$tm_on) return;
+        
     $t  = microtime(true);
     $res = $t;
 

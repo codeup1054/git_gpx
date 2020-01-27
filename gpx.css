@@ -320,4 +320,15 @@ button.sign
     border: magenta solid 0px;
     background-color: #4466cc;
    } /*ui-slider-range ui-corner-all ui-widget-header ui-slider-range-min*/
+   
+   
+.legend div
+{
+    display:inline-block;
+    width:20px;
+    height:15px;
+    font-size:10px;
+    text-align: center;;
+    color: #fff;
+}
                 

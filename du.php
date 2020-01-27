@@ -7,8 +7,13 @@ error_reporting(E_ALL);
 
 $now = time();  
 $var = array();
+$tm_on = (isset($_GET['tm']))?1:0;
+
+
+//print_r($_GET);
 
 jq_header(); 
+
 ?>
 
 <style>
@@ -102,11 +107,9 @@ if ($io) {
         $z = $p[3]; // zoom
         $x = $p[4]; // x
         $y = substr($p[5],0,strlen($p[5])-5); // y
-        
         $total_size_zoom[$z] = (isset($total_size_zoom[$z]))?$total_size_zoom[$z]+$s:$s;
         
         $delt = time()-$p[1];
-
         $d_c = d_color($delt);
         
         if ( isset($bar[$z][$d_c] ))
@@ -123,17 +126,6 @@ if ($io) {
 
         $inserts .= ",($z,$x,$y,$s,$t)";
         
-        
-        
-
-/*
-        $cache_files[$z][$x][$y] = 
-            array('fs' => $s, 
-                  'md' => $t,
-                  'delt' => $delt
-                   );
- */                 
-//        print (trim($p[3])."\t".$l[0]."<br />");
     
         }
     fclose($io);
@@ -155,9 +147,8 @@ if ($io) {
          `d` int(11) NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
         
-        if(isset ($_GET['r']))
-        { print ("*** ".$_GET['r']." ***");
-            if ( 
+          print ("*** ".$_GET['update']." ***");
+          if ( 
                 !$gsql->query("DROP TABLE IF EXISTS strava_cache") ||
                 !$gsql->query($sql_create_tab) ||
                 !$gsql->query($sql_insert)) {
@@ -165,15 +156,15 @@ if ($io) {
                     }
                 else printf("Затронутые строки (INSERT): %d\n", $gsql->affected_rows); 
                     
-        }        
     }
-    
-//    print "$sql_insert";
 
-   echo "<br />$total_cnt<br /><pre>size=".($total_size)."<br />".print_r($total_size_zoom,1)."</pre>";
+//   echo "<br />$total_cnt<br /><pre>size=".($total_size)."<br />".print_r($total_size_zoom,1)."</pre>";
     
    return array('bar'=>$bar, 'total_size' => $total_size); 
-}
+
+} // >>> groupsIntervalsFiles
+
+
 
 tm("02. create array");
 //echo "<br />cache_files = <pre>".print_r($cache_files,1)."<br /></pre>";
@@ -181,7 +172,7 @@ tm("03. ksort");
 
 $l = "";
 
-if (isset($_GET['r'])) 
+if (isset($_GET['update'])) 
 {   
     $res = groupsIntervalsFiles($ranges);
     print ("total_size=".$res['total_size']);
@@ -298,7 +289,7 @@ $dvt = "";
 
 foreach($c_cnt as $k=>$v)
 {
-    $dvt  .= "<div style='width:".($v/100)."px; background-color:".substr($k,1)."'></div>";
+    $dvt  .= "<div style='width:".($v/300)."px; background-color:".substr($k,1)."'></div>";
 }
 
 echo "<table class='stab cache'>

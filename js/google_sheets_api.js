@@ -90,7 +90,7 @@ function gpxFromJson()
         
         glob_gpx = [];
         tm('start read JSON');
-        $.get({ url: '../data/gpx.json', cache: false },function(data) {
+        $.get({ url: 'data/gpx.json', cache: false },function(data) {
                console.log("@@ read_json ",data);
                glob_gpx = data;
                gpxSetNamesToTable(data);

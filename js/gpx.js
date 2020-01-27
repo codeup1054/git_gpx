@@ -4,6 +4,14 @@ var map;
 var homeGeo = ["55.6442983","37.4959946"] // base
 var cache_area = {};
 
+ 
+
+$( document ).ready(function() {
+    show_cache_legend();
+    console.log( "@@ ready!" );
+});
+
+
 var clr_r = [
 'rgb(200,  0,  0)',
 'rgb(255, 90, 20)',
@@ -677,7 +685,7 @@ console.log ("@@ request_data",latlng,request_data );
                 type: "POST",
                 dataType : 'json',
                 async: false,
-                url: '../act.php',
+                url: 'act.php',
                 data: request_data,
                 success: function (d) {
 //                    console.log("@@ data = ", d);
@@ -1382,7 +1390,7 @@ function ifMapChanged()
                     +','+ hmOpacity
                     +','+ dinfo;   
             
-         href = window.location.origin+"/gpx/dev/#"+location_search; 
+         href = window.location.origin+"/gpx/#"+location_search; 
 //         console.log("@@ href ", href );
          window.location.href = href;
          $.cookie('hash', '#'+location_search);
@@ -1515,7 +1523,24 @@ function heatMapColorforValue(value){
 1    : red    (hsl(0, 100%, 50%))
 */  
   
-  var h = (1 - value) * 290 - 12
+  var h = (1 - value) * 280 + 5
   return "hsl(" + h + ", 100%, 40%)";
 }
+
+
+function show_cache_legend()
+{   
+    dv = "";
+    
+    for (i=0;i<=16;i++)
+    {
+        dv = dv+"<div style='background-color:"+heatMapColorforValue(i/16)+"'>"+i+"</div>";
+    }
+    
+    
+    $('.buttons_panel').append("<br /><br /><div class=legend>"+dv+"</div>");
+};
+
+
+
     

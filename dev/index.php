@@ -236,9 +236,11 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
 
 <script>
 
+/*
 // массив маркеров из php
- //var markersArray = <?php echo json_encode($markers); ?>;
+// var markersArray = <?php echo json_encode($markers); ?>;
 //   console.log("@@", markersArray);
+*/
 
 </script>
 
