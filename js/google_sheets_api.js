@@ -18,7 +18,8 @@ function makeApiCall(action) {
       case "save_json":  
             json_gpx = JSON.stringify(glob_gpx);
             json_gpx2 = JSON.stringify( [{ uno: 1, Ленинград: 2 }] );
-            console.log("@@ save_gpx_to_json", glob_gpx, json_gpx, json_gpx2 );
+            console.log("@@ save_gpx_to_json", glob_gpx);
+//            console.log("@@ save_gpx_to_json", glob_gpx, json_gpx, json_gpx2 );
             
             $.ajax
                 ({
@@ -103,16 +104,16 @@ function gpxSetNamesToTable(gpx_names)
 {   
     $(".datasetcheckbox").html("");
 
-    console.log("@@ names ", gpx_names) 
+    console.log("@@ names ", gpx_names);
     
+    $(".datasets").html("");
     
     $.each(gpx_names, function (k,v)
      {
        if(typeof v.points !== 'undefined')
        {
        $(".datasetcheckbox").append("<div class='checkbox_field' >\
-        <div check="+v.name+"><input type=checkbox id='"+v.name+
-            "' onchange='gpxSetCheckSelector(this.id)'>" +
+        <div check="+v.name+"><input type=checkbox id='"+v.name+"' gpx_set_name='"+v.name+"'  onchange='gpxSetCheckSelector(this.id)'>" +
         "<label for='"+v.name+"'><gpx_total>("+v.points.length+") </gpx_total>"+v.name+"</label></div></div>");
         gpxPointsToTable(v,k);
        }
@@ -132,10 +133,25 @@ function isLon(lng) {  return isFinite(lng) && Math.abs(lng) <= 180; }
 
 
 function gpxSetCheckSelector(id)
+{   
+    
+    console.log('@@ pxSetCheckSelector',id,$("#"+id)[0].checked, $("#"+id));
+    gpxPoinsTableSlide(id);
+    gpxPoinsSelectTableByID(id, $("#"+id)[0].checked); 
+}
+
+function gpxPoinsSelectTableByID(id, isСheck)
 {
-    console.log('@@ pxSetCheckSelector',id);
-    gpxPoinsTableSlide(id); 
+    $('#gpx_set_table_'+id+' .points input').each(function(k,v){
+        
+//        console.log("@@ v k",v,k, $(v).closest('tr').attr('id'));
+        
+        $(v).css({'background-color':'red'})        
+            .prop('checked', isСheck);
+    });
+
     updateMarkersOnMap(id);
+    console.log('@@ gpxPoinsSelectTableByID',id);
 }
 
 
@@ -189,7 +205,8 @@ function gpxPointsToTable(v,id)
   
     hide = (setName != '1Мещ-Сколково')?"":"hide";
   
-    $(".datasets").append("<div class='wp_panel' "+hide+" id='gpx_set_table_"+setName+"'>"+ setInfo +"<table class='tab' dataset='"+setName+"'></table><div>");
+    $(".datasets").append("<div class='wp_panel' "+hide+" id='gpx_set_table_"+setName+"'>"
+                    + setInfo +"<table class='tab points' dataset='"+setName+"'></table><div>");
 
   
     $.each(points, function( k,v)
@@ -212,9 +229,9 @@ function gpxPointsToTable(v,id)
             o_lng = v.lng;  
            
 //continue;
-            rowId = v.name + "_" + k;
-            row += "<tr id='"+rowId+"' class='"+k+"'><td>"+k+"</td>" +
-                  "<td><input type='checkbox'/></td>" +        
+            rowId = setName+"|"+v.name+"|"+k;
+            row += "<tr gpx_id='"+rowId+"'><td>"+k+"</td>" +
+                  "<td><input gpx_id='"+rowId+"' type='checkbox'/></td>" +        
                   "<td>"+v.name+"</td>"+        
                   "<td geo>"+v.description+"</td>"+        
                   "<td>"+v.lat+"</td>"+        
@@ -227,6 +244,26 @@ function gpxPointsToTable(v,id)
         
         $("label[for='"+setName+"'] gpx_total").text("("+ points.length +") ");
         $("[dataset ="+setName+"]").append(row);
+        
+        $("[dataset ="+setName+"] input").on('change', function(el){
+            updateMarkersOnMap("");
+//            console.log("@@ [dataset ='"+setName+"'] input", el);
+        });
+        
+        $("[dataset ="+setName+"] tr").on('click', function(el,v){
+            updateMarkersOnMap("");
+            
+            lat = $($(this).children('td')[4]).text();
+            lng = $($(this).children('td')[5]).text();
+            
+            var latLng = new google.maps.LatLng(lat,lng);
+            
+            map.panTo(latLng);
+            
+            console.log("@@ [gpx_id] tr.on('click')=", el,lat);
+        });
+
+
 
         tm("addToTable"+setName)
         
@@ -260,7 +297,7 @@ function gpxFromGoogle() {
         }).get();
 
         $(".datasetcheckbox").html("<div class='checkbox_field'>\
-            <div check=all><input type=checkbox id='all' onchange='updateMarkersOnMap(this.id)'>" +
+            <div check=all><input type=checkbox id='all'  onchange='updateMarkersOnMap(this.id)'>" +
                     "<label for='all'>Все</label></div></div>");
 
 //        sheetsNames.sort();
@@ -596,46 +633,43 @@ function updateMarkersOnMap(id)
 {
 // http://qaru.site/questions/17975/google-maps-api-v3-how-to-remove-all-markers 
     
-//    $(".wp_panel").addClass('hide');
-    
    while(markers.length) { markers.pop().setMap(null);   }
-
-
-   if (id == 'all')
-   { 
-      $("[type=checkbox]").prop('checked', $('[type=checkbox]#all').prop('checked') );
-   }
-
-    markersArray = new _markers([]);
+   markersArray = new _markers([]);
     
-    $("[type=checkbox]:checked").each(function(){
-       
-    setName = $(this).attr('id');
+   chkd = $("input[gpx_id]:checked");
 
-//    console.log("@@@ updateMarkersOnMap()", setName, $("[type=checkbox]:checked"));
-//      trs = $('.wp_panel.'+setName+" tr" )
-     console.log("@@@ updateMarkersOnMap", setName, glob_gpx);
-       
-     lat = total_dist = 0;
-              
-     $(glob_gpx[setName].points).each(function(k,v) {
-           m = { 'name':v.name,
-                 'idx':v.name+'_'+k,
+   console.log("@@ updateMarkersOnMap chkd =", chkd );
+    
+   $.each(chkd, function(k,v) {
+           
+          gpx_id = $(v).attr('gpx_id'); 
+          
+          console.log("@@ gpx_id=", gpx_id,v); 
+            
+          [setName,pointName,pos] = gpx_id.split("|");
+        
+          console.log("@@ updateMarkersOnMap each=", k,v, setName, pointName , pos);
+          
+          p = glob_gpx[setName].points[pos];
+          
+          m = { 'name':p.name,
+                 'gpx_id':gpx_id,
                  'gpxSet':setName,
-                 'lat':v.lat,
-                 'lng':v.lng,
-                 'dist':v.dist,
-                 'color':v.color,  
+                 'lat':p.lat,
+                 'lng':p.lng,
+                 'dist':p.dist,
+                 'color':p.color,  
 //                 'icon':"icon"  
                  };
            
 //           olat = lat;
 //           olng = lng;
            markersArray.push(m);
-       });
-   });
-   
-  markersArray.addMarkers();
+   }); // end each
+
+   console.log("@@ updateMarkersOnMap markersArray=", glob_gpx, markersArray);
+
+   markersArray.addMarkers();
 //  drawPath();
 //  savegpx();
 }    

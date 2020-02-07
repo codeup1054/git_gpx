@@ -116,7 +116,6 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
 
 
 <div id="container">
-
     <div id="left_panel">
            <div id="datasetpanel">
                <div class="datasetcheckbox"></div>
@@ -132,13 +131,19 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
             <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('read_json')">Из JSON</button>
             <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('save_json')">В JSON</button>
             <button id="button  signout-button" class="ui-button ui-widget ui-corner-all"  onclick="fitMarkers()">Все</button>
-            <button id="button  signout-button" class="ui-button ui-widget ui-corner-all"  onclick="drawPath()">Профиль</button>
             <button id="zoom_info" class="ui-button ui-widget ui-corner-all"  onclick="">11</button>
-            <button id="clear_casche_rect" class="ui-button ui-widget ui-corner-all"  onclick="checkCacheMultyZoomBySQL(map.getCenter(),map.getZoom()-3,6)">Cache</button>
-            <button id="clear_casche_rect" class="ui-button ui-widget ui-corner-all"  onclick="clear_casche_rect()">Clear Cache</button>
-            <button id="button  signin-button" class="sign"  onclick="handleSignInClick()">Sign in</button>
-            <button class='sign' id="button signout-button" onclick="handleSignOutClick()">Sign out</button>
+                <button id="button  signin-button" class="sign"  onclick="handleSignInClick()">Sign in</button>
+                <button class='sign' id="button signout-button" onclick="handleSignOutClick()">Sign out</button>
+            <fieldset>
+                <legend>На карте:</legend>
+                  <input type="checkbox" name="checkbox-nested-1" id="checkbox-nested-1" onchange="pathOnOff();"/>
+                  <label for="checkbox-nested-1">Профиль</label>
+                
+                  <input type="checkbox" name="checkbox-nested-2" id="checkbox-nested-2" onclick="cacheOnOff();"/>
+                  <label for="checkbox-nested-2">Cash</label>
+           </fieldset>
         </div>
+
         <div id="map"></div>  
     </div>
     <div class="clear"></div>

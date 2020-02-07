@@ -17,9 +17,17 @@ jq_header();
 ?>
 
 <style>
-.cache td:nth-child(n+2):nth-child(-n+4){
+.cache td:nth-child(n+2):nth-child(-n+15){
     text-align: right;
  }
+
+.cache td:nth-child(n+5):nth-child(-n+15){
+    text-align: right;
+    padding: 0px 5px 0px 0px;
+ }
+
+ 
+
  
 .cache td               { font-size:12px; }
 
@@ -209,7 +217,8 @@ foreach($sql_bars as $k => $v)
         
         
         
-        $tdh .= "<td>$vv</td>";
+        $tdh .= "<td>".secondsToTime($vv)."</td>";
+        
         $clr = substr($kk, 1);
 
         if( isset ($v[$kk])) 

@@ -72,7 +72,6 @@ window.tm = function (s="")
 
 tm();
 
-
 // Класс для обработки массивов маркеров
 
 class _markers {
@@ -82,55 +81,25 @@ class _markers {
   }
 
   push(arr) { this.d.push(arr);  }
-  
-  
-  // добавить все маркеры на карту  
-  addMarkers() {
+   
+    
+  addMarkers() {  // 01. добавить все маркеры на карту
      var self = this;
     $(this.d).each(function(k,m) {
-        
-//      console.log("@@ addMarker", m);
-        
         if( isFloat(m.lat*1) && isFloat(m.lng*1) )
         self.placeMarker(m);}) 
     }
-
   
-  //отрисовать маркер на карте
-  placeMarker(m) {
+
+    placeMarker(m,prop={'fill':"%23113388"}) { // 02. отрисовать маркер на карте
     
-     console.log("@@ placeMarker", m);
+// console.log("@@ placeMarker", m);
      
      var dist = getDistanceFromLatLonInKm(m.lat, m.lng );
-
      var dist = m.dist;
-    
-    //    color = m.color.substring(0, 7);
      var color = ( typeof m.color !== 'undefined')? m.color : "#ffee00";
-        
-/*     iwCont = '<div idx='+m.idx +' class="baloon idx'+m.idx +'">' 
-                    + '<m_idx class="idx">' + m.idx + '</m_idx>'   
-                    + '<color class="color"  contenteditable=True >'+ color + '</color>'
-                    + '<lat class="lat" contenteditable=True> '+ m.lat + '</lat>'
-                    + '<lng class="lng" contenteditable=True> '+ m.lng + '</lng><br />'
-                    + '<name contenteditable=True>'+ m.name + '</name> '
-                    + '<dist class="dist" contenteditable=True>['+ dist + ']</dist>'
-                    + '<time class="time" contenteditable=True><br />'+ m.time+'</time>'
-                    + " </div>"; //label text
-*/    
-//     console.log("@@@ color", m );
-    
      var pos = new google.maps.LatLng(m.lat, m.lng);    
         
-     var m_icon = 'data:image/svg+xml,<svg class="mono_icon"  width="15" height="15" xmlns="http://www.w3.org/2000/svg">\
-                        <defs>\
-                                <radialGradient id="exampleGradient">\
-                                  <stop offset="10%" stop-color="gold"/>\
-                                  <stop offset="95%" stop-color="green"/>\
-                                </radialGradient>\
-                        </defs>\
-                        <path  fill-opacity=".3" stroke-width="0.5" fill="#f40" stroke="#f40" id="svg_1" d="m14.685496,6.570998c0,3.790972 -7.068536,8.225084 -7.068536,8.225084s-7.302785,-4.433682 -7.302785,-8.282617c0,-3.651441 2.918311,-6.359523 6.88748,-6.359523c3.968235,0 7.483841,2.76561 7.483841,6.417056z" /></svg>';
-    
      switch (m.gpxSet)
         {
             case "Велобайк":
@@ -144,59 +113,43 @@ class _markers {
                     };
                     break;
             default: 
-                    var aRotationVariable = 70;
-                    var icon = {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 5,
-                        fillColor: m.color,
-                        rotation: aRotationVariable,
-                        fillOpacity: 1,
-                        strokeWeight: 0.4
-                    };
-                    var icon = {
-                        anchor: new google.maps.Point(30, 30.26),
-                        size: new google.maps.Size(60,30.26),
-                        url: 'data:image/svg+xml,<svg class="mono_icon"  width="15" height="15" xmlns="http://www.w3.org/2000/svg">\
-                        <defs>\
-                            <radialGradient id="exampleGradient">\
-                              <stop offset="10%" stop-color="gold"/>\
-                              <stop offset="95%" stop-color="green"/>\
-                            </radialGradient>\
-                        </defs>\
-                            <path  class="mono_icon" fill-opacity=".3"   stroke-width="0.5" fill="#f40" \
-                            stroke="#f40" id="svg_1" \
-                            d="m14.685496,6.570998c0,3.790972 -7.068536,8.225084 -7.068536,8.225084s-7.302785,-4.433682 -7.302785,-8.282617c0,-3.651441 2.918311,-6.359523 6.88748,-6.359523c3.968235,0 7.483841,2.76561 7.483841,6.417056z"/>\
-                             </svg>'
-                    };
+
+                    var markerTitle = m.name+'\n'+m.lat+','+m.lng;
+                    var text_lines = svg_text_to_lines(m.name, 15, 4);
+                    var l = 0;
                     
-//                    var markerTitle = dist.toFixed(2);
-                    var markerTitle = m.name;
+                    text_lines = text_lines.concat([parseFloat(m.lat).toFixed(5)+','+parseFloat(m.lng).toFixed(5)]);
                     
+                    var m_text = $( text_lines ).map(function(k,v) {
+                        l++; return '<text x="20" y="'+(l*9)+'" font-family="Arial, sans-serif" fill="%23113388" stroke="none" \
+                              paint-order="stroke" text-anchor="left" font-size="9"  >'+v+'</text>'; 
+                        }).get().join('');
+                    
+                    console.log("@@ text=", text_lines);
                     
                     var url = m.url || 'data:image/svg+xml;utf-8, \
-      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
-        <circle fill="%232255aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
-        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
-        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+markerTitle+'</text>\
-      </svg>';
+                    <svg width="132" height="52" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+                    <circle fill="'+prop.fill+'" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
+                    <rect x="16" y="0" width="82" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />'
+                    +m_text+
+                    '</svg>';
                     
-            var icon = {
-                anchor: new google.maps.Point(14, 14),
-                size1: new google.maps.Size(60,30.26),
-                url: url
-
+                    var icon = {
+                        anchor: new google.maps.Point(14, 14),
+                        size1: new google.maps.Size(60,30.26),
+                        url: url
         }
     }
         
        var marker = new google.maps.Marker({
-            name: m.name+"n",
+            name: m.name,
             title: markerTitle,
             dist:dist,
             position: pos,
             map: map,
             m: m,
             gpxSet: m.gpxSet,
-            id: m.idx,
+            idx: m.idx,
             draggable: true,
             icon: icon,
           });
@@ -217,8 +170,104 @@ class _markers {
     //    map.panTo(pos);
         // geocoding 
     } // end method PlaceMarker
+}
+
+function updateMarkerIcon(m)
+{
+
+m.setMap(null);
+
+
+
+console.log("@@ updateMarkerIcon", m);
+
+
+url = m.url
+
+/*'data:image/svg+xml;utf-8, \
+      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+        <circle fill="%23ff55aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
+        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
+        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+m.title+'</text>\
+      </svg>';
+*/
+
+console.log("@@ url=",m.icon.url);
+
+
+new_m = m.m; 
+new_m.url = url;
+new_m.lat = m.position.lat();
+new_m.lng = m.position.lng();
+
+markersArray.push(new_m); // заменить на update Marker
+markersArray.placeMarker(new_m,{'fill':"%23ff8811"});
+
+}  
+
+
+
+function svg_text_to_lines(t, width, height) {
   
+    var words = t.split(/[\n ]+/).reverse();
+
+    w = words ;
+    
+    words = words.filter( function(e) { return e !== '' });
+    
+    [lines,line] = [[],[]];
+        
+    while (word = words.pop()) {
+      line.push(word);
+      text = line.join(" ");
+      if (text.length > width) { 
+        line = []; 
+        lines.push(text); 
+        text="";
+       }
+    }
+    
+  if(text !== "" ) lines.push(text); 
+
+
+  console.log("@@ svg_text_to_lines \n", t, w, lines);
+
+
+  return lines;
+}
+
+function svg_wrap1(t, width, height) {
   
+  var tspan;
+  
+  text = $(t);
+  
+  text.attr("dy",height);
+        var words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 1.1, // ems
+        y = text.attr("y"),
+        dy = parseFloat( text.attr("dy") ),
+        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+
+    console.log("@@ elem", text, words,tspan );
+    
+    while (word = words.pop()) {
+
+      line.push(word);
+      tspan.text(line.join(" "));
+
+      if (text.getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+      }
+    }
+
+  return tspan;
 }
 
 
@@ -446,47 +495,64 @@ function callDrag(marker,drag_end=0) {
   };
 }
 
-function updateMarkerIcon(m)
-{
-
-m.setMap(null);
-console.log("@@ updateMarkerIcon", m);
-
-
-url = 'data:image/svg+xml;utf-8, \
-      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
-        <circle fill="%23ff55aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
-        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
-        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+m.title+'</text>\
-      </svg>';
-
-new_m = m.m; 
-new_m.url = url;
-new_m.lat = m.position.lat();
-new_m.lng = m.position.lng();
-
-markersArray.push(new_m); // заменить на update Marker
-markersArray.placeMarker(new_m);
-
-}  
 
 
 function updateGeoInGlobalGpx(m,lat,lng)
 {           
-    n = m.id.split('_');
-    id = n[0]
+    console.log("@@ updateGeoInGlobalGpx m=", m.m.gpx_id, m);
+    
+    [setName,pointName,pos] = m.m.gpx_id.split('|');
 
-    console.log("@@ updateGeoInGlobalGpx=", m, n, lat,lng);
+    console.log("@@ updateGeoInGlobalGpx= n", pos, lat,lng,glob_gpx);
 
 //    id = glob_gpx.findIndex(x => x.name === n[0]);
-//    glob_gpx[id].points[n[1]].lat = lat;
-//    glob_gpx[id].points[n[1]].lng = lng;
 
-    glob_gpx[m.gpxSet].points[n[1]].lat = lat;
-    glob_gpx[m.gpxSet].points[n[1]].lng = lng;
+    glob_gpx[setName].points[pos].lat = lat;
+    glob_gpx[setName].points[pos].lng = lng;
 
-//    $.each(glob_gpx , function( ) {   });   
 }
+
+function updatePointOrderInGlobalGpx(setName)
+{           
+    console.log("@@ updatePointOrderInGlobalGpx m=", setName, glob_gpx);
+    gpx_set_trs = $("tr[gpx_id*='"+setName+"']");
+        
+    points = [];
+    glbp = glob_gpx[setName].points;
+        
+    $.each(gpx_set_trs, function (k,v)
+    {   
+        tds = $($(v).children('td')[0]).text();
+        console.log("@@@ updatePointOrderInGlobalGpx k v = \n",k,v,tds,glbp[tds]);
+        points.push( glbp[tds] );
+        
+/*        p = {
+        ID: k
+        Status: ""
+        name: []
+        description: "Москва, Юго-западная"
+        lat: "55.6624"
+        lng: "37.4838"
+        dist: "1.57"
+        color: "#ff8866"
+        time: ""
+        'Название станции': "Юго-западная"
+        }
+*/
+
+    }); 
+
+    glob_gpx[setName].points = points;
+
+//    console.log("@@ updateGeoInGlobalGpx= n", pos, lat,lng,glob_gpx);
+
+//    id = glob_gpx.findIndex(x => x.name === n[0]);
+
+//    glob_gpx[setName].points[pos].lat = lat;
+//    glob_gpx[setName].points[pos].lng = lng;
+
+}
+
 
 function updateTotalDist(mname)
 {
@@ -508,21 +574,31 @@ function selectCallback(infowindow)
      
 function markerClick(ob) {
     
-    console.log("@@markerClik", ob.name);
+    
+    point_id = ob.idx  ;
+    
+    trCont = $("tr[id='"+point_id+"']");
+
+//    console.log("@@markerClik", trCont, ob.m.gpx_id, ob);
+
+    
     trCont.addClass(); 
     $('.rowselect').toggleClass('rowselect');
     trCont.toggleClass('rowselect');
 //    $("body").scrollTo(tdgeos);
     
-    gpxPoinsTableSlide(ob.name); 
+    gpxPoinsTableSlide(ob.m.gpx_id); 
     
     }
 
 function gpxPoinsTableSlide(id)
 { 
     var frame = $("#left_panel"); // The ".test" parent element
+    
+    console.log("@@ TableSlide id=",id);
+    
     frame.animate({
-        scrollTop: $("#gpx_set_table_"+id).offset().top + frame.scrollTop() -5
+        scrollTop: $("[gpx_id='"+id+"']").offset().top + frame.scrollTop() -5
       }, 300);
 }
  
@@ -664,46 +740,6 @@ var mapOptions = {
 }
 
 
-function checkCacheMultyZoomBySQL (latlng, zoom, z_depth)
-{
-        coord = MERCATOR.getTileAtLatLng(latlng, zoom);
-        
-        var request_data = 
-        { get_cache_list: 1, 
-            z_depth: z_depth,
-            z: zoom,
-//            x: coord.x,
-//            y: coord.y,
-            lat: latlng.lat,
-            lng: latlng.lng
-           };
-
-console.log ("@@ request_data",latlng,request_data );
-        
-        $.ajax
-            ({
-                type: "POST",
-                dataType : 'json',
-                async: false,
-                url: 'act.php',
-                data: request_data,
-                success: function (d) {
-//                    console.log("@@ data = ", d);
-                    
-                    $.each(d.tiles, function(k,v){
-                    $.each(v, function(kk,vv){
-                    $.each(vv, function(kkk,vvv){
-//                        console.log("@@  k,kk,kkk =",k,kk,vvv);
-                        drawCacheArea(k,kk,vvv);
-                    });
-                    });
-                    });
-                    
-                },
-                failure: function() {alert("Error!");}
-            });
-
- } // end checkBySQL
 
 
 
@@ -783,7 +819,7 @@ console.log("\nOK: ************\n@@ b_depth[",r_idx,"]\n",layer_zoom, latlng,"\n
                     cache_area[r_idx]=new google.maps.Rectangle({
                             strokeColor: '#888',
                             strokeWeight: 1,
-                            strokeOpacity: (layer_zoom)/32,
+                            strokeOpacity: (layer_zoom)/24,
 //                            strokeColor: clr_r[layer_zoom%8],
 //                            fillColor: clr_r[layer_zoom%8],
                             strokeColor: 'gray',
@@ -830,7 +866,7 @@ console.log("\nOK: ************\n@@ b_depth[",r_idx,"]\n",layer_zoom, latlng,"\n
 //            strokeWeight: hmk*1.5 + 0.2,
             strokeWeight: 1,
 //            strokeOpacity: Math.pow(2,z)/Math.pow(2,16),
-            strokeOpacity: Math.pow(z,2)/Math.pow(32,2),
+            strokeOpacity: Math.pow(z,2)/Math.pow(16,2.5),
 //            strokeColor: clr_r[z%8],
             strokeColor: heatMapColorforValue( hmk ),
             fillOpacity: 0
@@ -945,7 +981,8 @@ function updateGeoInTable(m,lat,lng)
 {
 //    tdgeos = $('.datasets td:contains('+addr+')').parent("tr").find("td").slice(4,7)
 //    row = $("#")
-    rselect = '[dataset="'+m.gpxSet+'"] [id="'+m.id+'"]';
+    rselect = 'tr[gpx_id="'+m.m.gpx_id+'"]';
+    
     tdgeos = $(rselect).find("td").slice(4,7)
 
     console.log("@@ tdgeos", m, rselect  ,tdgeos);
@@ -981,31 +1018,49 @@ function fitMarkers()
 }
 
 // elevation 
+function gpxGetSelected()
+{   
+    dataSet = $(".points input:checked");
+    
+    return dataSet;
+}
+
+
+function pathOnOff()
+{
+    if ($(event.target).is(":checked")) drawPath();
+    else clearPath();
+}
+
+
+function clearPath()
+{
+      if (polyline) polyline.setMap(null); 
+}
 
 function drawPath() {
     
-   
-    path_points = $('.datasets div:not(.hide) tr')
-         .map(function(k,v) {
-         
+    gpx_selected = gpxGetSelected();
+    path_points = gpx_selected.map(function(i,e) {
+
+         v = e.closest('tr');
          lat = $(v).find("td:eq(4)").text();
          lng = $(v).find("td:eq(5)").text();   
          
-//         console.log("@@@ lat,lng  ", lat,lng);
+//       console.log("@@@ lat,lng  ", lat,lng);
          
          var latLng = new google.maps.LatLng(lat,lng);
          return latLng ;
       }).get();
     
-//    console.log("@@@ draw path", path_points);
-
-    // Create a new chart in the elevation_chart DIV.
-
-//    chart = new google.visualization.ColumnChart(document.getElementById('elevation-chart'));
+// Create a new chart in the elevation_chart DIV.
+// chart = new google.visualization.ColumnChart(document.getElementById('elevation-chart'));
     chart = new google.visualization.AreaChart(document.getElementById('elevation-chart'));
 
-
     var path = path_points.slice(1);
+    
+    console.log ("@@ path_points", path, path_points);
+    
     // Create a PathElevationRequest object using this array.
     // Ask for 256 samples along that path.
 
@@ -1014,11 +1069,12 @@ function drawPath() {
 //    console.log("@@@ samp ", samp)
     
     var pathRequest = {
-        'path': path,
+        'path': path_points,
         'samples': samp
     }
     // Initiate the path request.
     elevator.getElevationAlongPath(pathRequest, plotElevation);
+    
 }
 
 
@@ -1248,10 +1304,22 @@ var fixHelperModified = function(e, tr) {
     });
     return $helper;
 },
-    updateIndex = function(e, ui) {
+ updateIndex = function(e, ui) {
+        console.log("@@@ updateIndex",e, ui);
+
+        [setName,pointName,pos] = $(ui.item[0]).attr('gpx_id').split('|');
+        
+
+        
+        updatePointOrderInGlobalGpx(setName); 
+                
+        drawPath();
+        
         $('td.index', ui.item.parent()).each(function (i) {
             $(this).html(i + 1);
         });
+    },
+ updatePath = function(e, ui) {
     };
 
 
@@ -1491,7 +1559,57 @@ function UrlExists(url)
     
 // Секция для обработки кнопок тулбара
 
-function clear_casche_rect()
+function cacheOnOff()
+{
+    if ($(event.target).is(":checked")) checkCacheMultyZoomBySQL(map.getCenter(),map.getZoom()-3,6);
+    else clear_cache();
+}
+
+
+function checkCacheMultyZoomBySQL (latlng, zoom, z_depth)
+{
+        coord = MERCATOR.getTileAtLatLng(latlng, zoom);
+        
+        var request_data = 
+        { get_cache_list: 1, 
+            z_depth: z_depth,
+            z: zoom,
+//            x: coord.x,
+//            y: coord.y,
+            lat: latlng.lat,
+            lng: latlng.lng
+           };
+
+// console.log ("@@ request_data",latlng,request_data );
+        
+        $.ajax
+            ({
+                type: "POST",
+                dataType : 'json',
+                async: false,
+                url: 'act.php',
+                data: request_data,
+                success: function (d) {
+//                    console.log("@@ data = ", d);
+                    
+                    $.each(d.tiles, function(k,v){
+                    $.each(v, function(kk,vv){
+                    $.each(vv, function(kkk,vvv){
+//                        console.log("@@  k,kk,kkk =",k,kk,vvv);
+                        drawCacheArea(k,kk,vvv);
+                    });
+                    });
+                    });
+                    
+                },
+                failure: function() {alert("Error!");}
+            });
+
+ } // end checkBySQL
+
+
+
+function clear_cache()
 {
     
     break_cnt = 0; 
@@ -1499,15 +1617,7 @@ function clear_casche_rect()
     $.each(cache_area, function (k,v) {
         v.setMap(null);
         delete cache_area[k];
-//        console.log("@@ clear_casche_rect",Object.keys(cache_area).length);
     });
-    
-/*    while(Object.keys(cache_area).length &&  break_cnt < 1000 ) {
-        break_cnt++;
-        console.log("@@ cache_area", cache_area[Object.keys(cache_area)[Object.keys(cache_area).length - 1]]);
-        cache_area.pop().setMap(null); 
-        }
- */       
 }
 
 // >>>> Секция для обработки кнопок тулбара    

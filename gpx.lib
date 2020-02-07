@@ -4,17 +4,32 @@ $time_start = $time_lap =  microtime(true);
 
 $ranges = array(
 '0rgb(200,  0,  0)'=>60*30,
-'1rgb(255, 90, 20)'=>3600*6,
-'2rgb(250,225, 10)'=>3600*24,
-'3rgb(100,230, 10)'=>3600*24*2,
-'4rgb( 30,180, 15)'=>3600*24*3,
-'5rgb( 80,190,155)'=>3600*24*4,
-'6rgb( 80,180,230)'=>3600*24*5,
-'7rgb( 100,120,230)'=>3600*24*6,
-'8rgb( 170,190,210)'=>3600*24*7,
+'1rgb(255, 90, 20)'=>3600*1,
+'2rgb(250,225, 10)'=>3600*12,
+'3rgb(100,230, 10)'=>3600*24*1,
+'4rgb( 30,180, 15)'=>3600*24*2,
+'5rgb( 80,190,155)'=>3600*24*7,
+'6rgb( 80,180,230)'=>3600*24*14,
+'7rgb( 100,120,230)'=>3600*24*21,
+'8rgb( 170,190,210)'=>3600*24*30,
 '9rgb( 210,220,230)'=>3600*24*365
 );
 
+
+function secondsToTime($seconds) {
+    $dtF = new DateTime('@0');
+    $dtT = new DateTime("@$seconds");
+    
+    $d = $dtF->diff($dtT)->format('%a');
+    $h = $dtF->diff($dtT)->format('%h');
+    $i = $dtF->diff($dtT)->format('%i');
+    
+    $d = ($d)?$d."дн. ":"";
+    $h = ($h)?$h."ч. ":"";
+    $i = ($i)?$i."мин. ":"";
+    
+    return $d.$h.$i;
+}
 
 
 function jq_header()
@@ -175,11 +190,9 @@ if ($gsql->connect_errno) {
  
 $tm_on = 0; 
  
-function tm($s = '',$is_str=0)
+function tm($s = '', $is_str=0)
 {
     global $time_start, $time_lap, $tm_on;
-    
-    if (!$tm_on) return;
         
     $t  = microtime(true);
     $res = $t;
@@ -207,10 +220,11 @@ function tm($s = '',$is_str=0)
 
     $time_lap = $t;
     
-    if ($is_str) return $res2;
-    else echo $res;
- 
-}
+    if ($is_str || !$tm_on) 
+        return $res2;
+    else 
+        echo $res;
+ }
 
 
 function gpx_cache_scan()
