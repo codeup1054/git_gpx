@@ -15,11 +15,11 @@ function makeApiCall(action) {
             sheet_id = sheets[0].get("properties", {}).get("sheetId", 0)
             break; 
 
-      case "save_json":  
+      case "save_json":
             json_gpx = JSON.stringify(glob_gpx);
             json_gpx2 = JSON.stringify( [{ uno: 1, Ленинград: 2 }] );
+//            console.log("@@ save_gpx_to_json", json_gpx);
             console.log("@@ save_gpx_to_json", glob_gpx);
-//            console.log("@@ save_gpx_to_json", glob_gpx, json_gpx, json_gpx2 );
             
             $.ajax
                 ({
@@ -163,6 +163,17 @@ function gpsUpdateSetType(sel)
     console.log("@@ gpsUpdateSetType", glob_gpx);
 }
 
+
+function toggleSet(el)
+{
+    setId = $(el).attr('set_id');
+    
+    $("[dataset='"+setId+"'] input").prop('checked', $(el).prop('checked'));
+    
+}
+
+
+
 function gpxPointsToTable(v,id)
  {
 //    console.log("@@ gpxPointsToTable",points);
@@ -193,7 +204,7 @@ function gpxPointsToTable(v,id)
               "</table>";
     
     row = "<tr class='header'><td> </td>" +
-                  "<td><input type='checkbox'/></td>" +        
+                  "<td><input set_id ='"+id+"' onchange='toggleSet(this)' type='checkbox'/></td>" +        
                   "<td>Наименование</td>"+        
                   "<td geo>Описание</td>"+        
                   "<td>Широта</td>"+        
@@ -232,8 +243,8 @@ function gpxPointsToTable(v,id)
             rowId = setName+"|"+v.name+"|"+k;
             row += "<tr gpx_id='"+rowId+"'><td>"+k+"</td>" +
                   "<td><input gpx_id='"+rowId+"' type='checkbox'/></td>" +        
-                  "<td>"+v.name+"</td>"+        
-                  "<td geo>"+v.description+"</td>"+        
+                  "<td contenteditable>"+v.name+"</td>"+        
+                  "<td geo contenteditable>"+v.description+"</td>"+        
                   "<td>"+v.lat+"</td>"+        
                   "<td>"+v.lng+"</td>"+
                   "<td>"+v.dist+"</td>"+
@@ -243,7 +254,44 @@ function gpxPointsToTable(v,id)
         });
         
         $("label[for='"+setName+"'] gpx_total").text("("+ points.length +") ");
+        $("[dataset ="+setName+"]").html("");
         $("[dataset ="+setName+"]").append(row);
+
+//        $("[contenteditable]").on("input", function() {
+//            console.log("@@ *** td input ",$(this).text());
+//            }, false);
+        
+        $('body').on('focus', '[contenteditable]', function() {
+            const $this = $(this);
+            $this.data('before', $this.html());
+        }).on('blur keyup paste input', '[contenteditable]', function() {
+            const $this = $(this);
+            if ($this.data('before') !== $this.html()) {
+                $this.data('before', $this.html());
+                $this.trigger('change');
+
+            gpx_fields = {2:'name',3:'description'};
+            
+            gpx_field_name = gpx_fields[$(this).index()];
+            
+            gpx_id = $(this).closest('tr').attr("gpx_id");
+            
+            param = {};
+            param[gpx_field_name] = $(this).text();
+
+            console.log("@@ *** td input ",$(this).index(), 
+                    $(this).text(),
+                    gpx_id, 
+                    gpx_field_name, 
+                    param );
+            updateGpx(gpx_id, param);
+            updateMarkersOnMap("");
+                
+            }
+        });
+        
+        
+        
         
         $("[dataset ="+setName+"] input").on('change', function(el){
             updateMarkersOnMap("");
@@ -260,7 +308,7 @@ function gpxPointsToTable(v,id)
             
             map.panTo(latLng);
             
-            console.log("@@ [gpx_id] tr.on('click')=", el,lat);
+//            console.log("@@ map.panTo tr.on('click')=", el,lat);
         });
 
 
@@ -273,7 +321,6 @@ function gpxPointsToTable(v,id)
                 cancel: '[contenteditable]',
         })//.disableSelection();
     }
-
 
 
 function gpxFromGoogle() {     
@@ -629,7 +676,7 @@ console.log("@@@ table eq()" , text + ' ' + index, start );
 
     } // end gpxPointToTable
     
-function updateMarkersOnMap(id)
+function updateMarkersOnMap(id = 0 )
 {
 // http://qaru.site/questions/17975/google-maps-api-v3-how-to-remove-all-markers 
     
@@ -638,17 +685,16 @@ function updateMarkersOnMap(id)
     
    chkd = $("input[gpx_id]:checked");
 
-   console.log("@@ updateMarkersOnMap chkd =", chkd );
+//   console.log("@@ updateMarkersOnMap chkd =", chkd );
     
    $.each(chkd, function(k,v) {
            
           gpx_id = $(v).attr('gpx_id'); 
-          
-          console.log("@@ gpx_id=", gpx_id,v); 
+//          console.log("@@ gpx_id=", gpx_id,v); 
             
           [setName,pointName,pos] = gpx_id.split("|");
         
-          console.log("@@ updateMarkersOnMap each=", k,v, setName, pointName , pos);
+//          console.log("@@ updateMarkersOnMap each=", k,v, setName, pointName , pos);
           
           p = glob_gpx[setName].points[pos];
           
@@ -667,9 +713,8 @@ function updateMarkersOnMap(id)
            markersArray.push(m);
    }); // end each
 
-   console.log("@@ updateMarkersOnMap markersArray=", glob_gpx, markersArray);
-
-   markersArray.addMarkers();
+  console.log("@@ updateMarkersOnMap markersArray=", glob_gpx, markersArray);
+  markersArray.addMarkers();
 //  drawPath();
 //  savegpx();
 }    

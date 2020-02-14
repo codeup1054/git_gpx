@@ -134,13 +134,9 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
             <button id="zoom_info" class="ui-button ui-widget ui-corner-all"  onclick="">11</button>
                 <button id="button  signin-button" class="sign"  onclick="handleSignInClick()">Sign in</button>
                 <button class='sign' id="button signout-button" onclick="handleSignOutClick()">Sign out</button>
-            <fieldset>
-                <legend>На карте:</legend>
-                  <input type="checkbox" name="checkbox-nested-1" id="checkbox-nested-1" onchange="pathOnOff();"/>
-                  <label for="checkbox-nested-1">Профиль</label>
-                
-                  <input type="checkbox" name="checkbox-nested-2" id="checkbox-nested-2" onclick="cacheOnOff();"/>
-                  <label for="checkbox-nested-2">Cash</label>
+            <fieldset id='onmapOnOff'>
+                <legend >На карте:</legend>
+                <!-- Заполняется на основе global settings --> 
            </fieldset>
         </div>
 

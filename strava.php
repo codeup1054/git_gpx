@@ -59,16 +59,19 @@ function loadFromStrava($z,$x,$y)
     global $img_str, $img_cache_path, $watermark_img_str;
     $strava_url = 'https://heatmap-external-a.strava.com/tiles-auth/all/hot';
     
-    //$img = "$strava_url/$z/$x/$y.png?px=256&$Signature&$Key";
     //11,1149,657
+    // chrome://settings/cookies/detail?site=strava.com  искать после перехода по ссылке https://www.strava.com/heatmap#9.03/37.74883/55.67465/hot/all
+    //описание авторизации https://developers.strava.com/docs/getting-started/#oauth
 
-    $Signature="Signature=XdygRZNrhuk88SlE1sYYus5VBPj7yNupsAG~3VAisNktOQ1XTsvFTZcHvfDoBQzFHTwxJdAt3S3DDZGaRVnKYAHP~9si~HFyhW0Cyy22bFwIky~M6SHFhXImIYS2maapKyTDPjkUJ~T5bXzQ5J-9yQAheTlKKRNMlpzo1TkR6Kbr61LBcAbAPiOQ2KR8Xa85-i4b6oDn1GmmvGzvly3OcEL-ceDCOWGiBEDNuN4qs~2dCdOUUouD5rH3raVHDml4nbIs9iR-ya7JDmjC3PfTGAXUKCH19Fj8G9Os9OSgDaPTmAo4Q13a9KQZ0VKad8nxY9ZHrEclxad-nCLL3Neu0Q__";
-    $Key="Key-Pair-Id=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU4MTI1NDE5NX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTgwMDMwMTk1fX19XX0_";
          
     $img_url = "$strava_url/$z/$x/$y.png?px=256&$Signature&$Key";     
+    
+    $Key_Pair_Id = "APKAIDPUN4QMG7VUQPSA";
+    $Policy = "eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU4MjU2MTc1OX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTgxMzM3NzU5fX19XX0_";
+    $Signature = "acis0ljpNbsWqApUrY5s6eYAl-FUyP0G62j~rpGkSw68NaRZ2-uzFgU-PnPQIMOoJNY0MJxqEQ6T8lEN26GrTtYHcbxJNhKM3KWLJTLBkTfpdmhgXghhrKF1SMfitKHS7DH7Vu8oFxEMOm-TjlX54c8GI2b8TKS5prUTd7sWe-LC3l7Bp~X~pxUtj3VxZuu1rFtYxeFgdYjWoQ8rQqcO0SKDtR94IMSn3QJ0QSMdZsoS-DkmCT2ksFXy5zpFtWLCMx0PJMcqHIHER04O0DoKjyyrqbqwjW2FbPiriABd85fW1p90giYWvWMDWdHETllVGsg3ogq1hQvJ138yy7zowQ__";
 
 
-    $img_url  = "$strava_url/$z/$x/$y.png?px=256&Signature=XdygRZNrhuk88SlE1sYYus5VBPj7yNupsAG~3VAisNktOQ1XTsvFTZcHvfDoBQzFHTwxJdAt3S3DDZGaRVnKYAHP~9si~HFyhW0Cyy22bFwIky~M6SHFhXImIYS2maapKyTDPjkUJ~T5bXzQ5J-9yQAheTlKKRNMlpzo1TkR6Kbr61LBcAbAPiOQ2KR8Xa85-i4b6oDn1GmmvGzvly3OcEL-ceDCOWGiBEDNuN4qs~2dCdOUUouD5rH3raVHDml4nbIs9iR-ya7JDmjC3PfTGAXUKCH19Fj8G9Os9OSgDaPTmAo4Q13a9KQZ0VKad8nxY9ZHrEclxad-nCLL3Neu0Q__&Key-Pair-Id=APKAIDPUN4QMG7VUQPSA&Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU4MTI1NDE5NX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTgwMDMwMTk1fX19XX0_";
+    $img_url  = "$strava_url/$z/$x/$y.png?px=256&Signature=$Signature&Key-Pair-Id=$Key_Pair_Id&Policy=$Policy";
 
 //    $img_url = "$strava_url/$z/$x/$y.png?px=256";     
 //    $img = "https://anygis.ru/api/v1/Tracks_Strava_Ride/$x/$y/$z";   // c 2020-01-28 не работает  

@@ -3,275 +3,19 @@
 var map;
 var homeGeo = ["55.6442983","37.4959946"] // base
 var cache_area = {};
-
- 
-
-$( document ).ready(function() {
-    show_cache_legend();
-    console.log( "@@ ready!" );
-});
-
-
-var clr_r = [
-'rgb(200,  0,  0)',
-'rgb(255, 90, 20)',
-'rgb(250,225, 10)',
-'rgb(100,230, 10)',
-'rgb( 30,180, 15)',
-'rgb( 80,190,155)',
-'rgb( 80,180,230)',
-'rgb( 100,120,230)',
-'rgb( 170,190,210)',
-'rgb( 210,220,230)'
-];
- 
-
-param = document.location.hash || $.cookie('hash') || "55.644,37.495,11,0.90"
-
-var p = param.split(',');
-
-var homeGeo = ( isNaN(parseFloat(p[0].substr(1))) || isNaN(parseFloat(p[1])) )
-                ? ["55.7","37.32"] : [p[0].substr(1), p[1]];
-
-//var homeGeo = [hashGeo[0].substr(1),hashGeo[1]]
-
-var zoom = p[2]*1 || 11 ;
-var hmOpacity = p[3] || 0.9;
-var dinfo = p[4] || 0;
+var globalSettings = {
+               distOnOff:{on:true,  name:'Дистанция', exec:["updateMarkersOnMap"]},
+               cacheOnOff:{on:false, name:'Cache', exec:["cacheOnOff"]},
+               latlngOnOff:{on:true,name:'LatLng', exec:["updateMarkersOnMap"]},
+               pathOnOff:{on:true,  name:'Путь', exec:["updateMarkersOnMap"]}
+               };
 
 
-//var zoom = hashGeo[2].substr(0, hashGeo[2].length - 1);
-
-console.log ("@@ hashGeo", $.cookie('hash'), p, homeGeo, zoom, document.location );
-
-
-var tile_cnt = 0 ;
-
-
-window.tm = function (s="")
-{
-    var output = "";
-
-// Remember when we started
-   if (s == "")
-   {
-    lap = start = new Date().getTime();
-    
-    var date = new Date();
-    var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-
-    console.log("Старт: %s",str);        
-    }
-    else 
-    {
-    var end = new Date().getTime();
-    console.log("%s %s %s",end - start,end - lap,s);        
-    lap = end; 
-    }
-};
-
-tm();
-
-// Класс для обработки массивов маркеров
-
-class _markers {
-  constructor(d)    { this.d = d;  }
-
-  updateMarkerRow() { //console.log(this.d);  
-  }
-
-  push(arr) { this.d.push(arr);  }
-   
-    
-  addMarkers() {  // 01. добавить все маркеры на карту
-     var self = this;
-    $(this.d).each(function(k,m) {
-        if( isFloat(m.lat*1) && isFloat(m.lng*1) )
-        self.placeMarker(m);}) 
-    }
-  
-
-    placeMarker(m,prop={'fill':"%23113388"}) { // 02. отрисовать маркер на карте
-    
-// console.log("@@ placeMarker", m);
-     
-     var dist = getDistanceFromLatLonInKm(m.lat, m.lng );
-     var dist = m.dist;
-     var color = ( typeof m.color !== 'undefined')? m.color : "#ffee00";
-     var pos = new google.maps.LatLng(m.lat, m.lng);    
-        
-     switch (m.gpxSet)
-        {
-            case "Велобайк":
-                   console.log("@@ placeMarker", m.gpxSet);
-                   icon = {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 2.5,
-                        fillColor: "#ff22dd",
-                        fillOpacity: 0.9,
-                        strokeWeight: 0.1
-                    };
-                    break;
-            default: 
-
-                    var markerTitle = m.name+'\n'+m.lat+','+m.lng;
-                    var text_lines = svg_text_to_lines(m.name, 15, 4);
-                    var l = 0;
-                    
-                    text_lines = text_lines.concat([parseFloat(m.lat).toFixed(5)+','+parseFloat(m.lng).toFixed(5)]);
-                    
-                    var m_text = $( text_lines ).map(function(k,v) {
-                        l++; return '<text x="20" y="'+(l*9)+'" font-family="Arial, sans-serif" fill="%23113388" stroke="none" \
-                              paint-order="stroke" text-anchor="left" font-size="9"  >'+v+'</text>'; 
-                        }).get().join('');
-                    
-                    console.log("@@ text=", text_lines);
-                    
-                    var url = m.url || 'data:image/svg+xml;utf-8, \
-                    <svg width="132" height="52" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
-                    <circle fill="'+prop.fill+'" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
-                    <rect x="16" y="0" width="82" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />'
-                    +m_text+
-                    '</svg>';
-                    
-                    var icon = {
-                        anchor: new google.maps.Point(14, 14),
-                        size1: new google.maps.Size(60,30.26),
-                        url: url
-        }
-    }
-        
-       var marker = new google.maps.Marker({
-            name: m.name,
-            title: markerTitle,
-            dist:dist,
-            position: pos,
-            map: map,
-            m: m,
-            gpxSet: m.gpxSet,
-            idx: m.idx,
-            draggable: true,
-            icon: icon,
-          });
-      
-       
-        google.maps.event.addListener(marker, 'click', function () { markerClick(this);});
-        google.maps.event.addListener(marker, 'dblclick', function () { markerDel(this);});
-        google.maps.event.addListener(marker, 'dragend', callDrag(marker,1));
-        google.maps.event.addListener(marker, 'dragstart', callDrag(marker));
-        google.maps.event.addListener(marker, 'drag', callDrag(marker));
-
-        markers.push(marker);
-    
-        $('.baloon').on('click',function () {
-            console.log("@@ baloon click",this,this.idx,$(this).attr('idx'));
-            markerClick(this);
-            })
-    //    map.panTo(pos);
-        // geocoding 
-    } // end method PlaceMarker
-}
-
-function updateMarkerIcon(m)
-{
-
-m.setMap(null);
-
-
-
-console.log("@@ updateMarkerIcon", m);
-
-
-url = m.url
-
-/*'data:image/svg+xml;utf-8, \
-      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
-        <circle fill="%23ff55aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
-        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
-        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+m.title+'</text>\
-      </svg>';
-*/
-
-console.log("@@ url=",m.icon.url);
-
-
-new_m = m.m; 
-new_m.url = url;
-new_m.lat = m.position.lat();
-new_m.lng = m.position.lng();
-
-markersArray.push(new_m); // заменить на update Marker
-markersArray.placeMarker(new_m,{'fill':"%23ff8811"});
-
-}  
-
-
-
-function svg_text_to_lines(t, width, height) {
-  
-    var words = t.split(/[\n ]+/).reverse();
-
-    w = words ;
-    
-    words = words.filter( function(e) { return e !== '' });
-    
-    [lines,line] = [[],[]];
-        
-    while (word = words.pop()) {
-      line.push(word);
-      text = line.join(" ");
-      if (text.length > width) { 
-        line = []; 
-        lines.push(text); 
-        text="";
-       }
-    }
-    
-  if(text !== "" ) lines.push(text); 
-
-
-  console.log("@@ svg_text_to_lines \n", t, w, lines);
-
-
-  return lines;
-}
-
-function svg_wrap1(t, width, height) {
-  
-  var tspan;
-  
-  text = $(t);
-  
-  text.attr("dy",height);
-        var words = text.text().split(/\s+/).reverse(),
-        word,
-        line = [],
-        lineNumber = 0,
-        lineHeight = 1.1, // ems
-        y = text.attr("y"),
-        dy = parseFloat( text.attr("dy") ),
-        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-
-    console.log("@@ elem", text, words,tspan );
-    
-    while (word = words.pop()) {
-
-      line.push(word);
-      tspan.text(line.join(" "));
-
-      if (text.getComputedTextLength() > width) {
-        line.pop();
-        tspan.text(line.join(" "));
-        line = [word];
-        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-      }
-    }
-
-  return tspan;
-}
-
-
-let markersArray = new _markers([]);  
+var elevator;
+var chart;
+//var infowindow = new google.maps.InfoWindow();
+var polyline;
+// Load the Visualization API and the columnchart package.
 
 
 $(document).ready(function()
@@ -282,6 +26,22 @@ var resize= $("#left_panel");
 var right_p = $("#right_panel")  
 var containerWidth = $("#container").width();  
 
+
+    show_cache_legend();
+    console.log( "@@ ready!" );
+    
+$('#buttons_panel').html("***");    
+
+$(Object.keys(globalSettings)).each(function(k,v)
+            { 
+            el = globalSettings[v];    
+//            console.log("@@ gl",v,el,el.on,el.name, $('#right_panel'));
+            chk = (el.on)?"checked":"";
+                
+            $('#onmapOnOff').append(`<input type=checkbox  ${chk}
+            id= ${v} onchange='globalSettings.${v}.on=this.checked; gpxexec(["${el.exec}"]);'/>
+            <label for='on_of_distance'>${el.name}</label>` );
+            });
 
       
 $(resize).resizable({
@@ -353,6 +113,291 @@ $(resize).resizable({
 // дожидаемся загрузки и делаем infoWindow стильным  
   
 })
+
+
+var clr_r = [
+'rgb(200,  0,  0)',
+'rgb(255, 90, 20)',
+'rgb(250,225, 10)',
+'rgb(100,230, 10)',
+'rgb( 30,180, 15)',
+'rgb( 80,190,155)',
+'rgb( 80,180,230)',
+'rgb( 100,120,230)',
+'rgb( 170,190,210)',
+'rgb( 210,220,230)'
+];
+ 
+
+param = document.location.hash || $.cookie('hash') || "55.644,37.495,11,0.90"
+
+var p = param.split(',');
+
+var homeGeo = ( isNaN(parseFloat(p[0].substr(1))) || isNaN(parseFloat(p[1])) )
+                ? ["55.7","37.32"] : [p[0].substr(1), p[1]];
+
+//var homeGeo = [hashGeo[0].substr(1),hashGeo[1]]
+
+var zoom = p[2]*1 || 11 ;
+var hmOpacity = p[3] || 0.9;
+var dinfo = p[4] || 0;
+
+
+//var zoom = hashGeo[2].substr(0, hashGeo[2].length - 1);
+
+console.log ("@@ hashGeo", $.cookie('hash'), p, homeGeo, zoom, document.location );
+
+
+var tile_cnt = 0 ;
+
+
+window.tm = function (s="")
+{
+    var output = "";
+
+// Remember when we started
+   if (s == "")
+   {
+    lap = start = new Date().getTime();
+    
+    var date = new Date();
+    var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+    console.log("Старт: %s",str);        
+    }
+    else 
+    {
+    var end = new Date().getTime();
+    console.log("%s %s %s",end - start,end - lap,s);        
+    lap = end; 
+    }
+};
+
+tm();
+
+// Класс для обработки массивов маркеров
+
+
+var olat, olng;
+
+class _markers {
+  
+    constructor(d)    {
+        this.path_total_dist = 0;
+        this.d = d;  
+        }
+    
+    updateMarkerRow() {   } //console.log(this.d);
+    push(arr) { this.d.push(arr);  }
+    addMarkers() {  // 01. добавить все маркеры на карту
+
+    var self = this;
+    this.path_total_dist = 0;
+     
+    while(markers.length) { markers.pop().setMap(null); }  
+     
+    $(this.d).each(function(k,m) {
+        if( isFloat(m.lat*1) && isFloat(m.lng*1) )
+        self.placeMarker(m);}) 
+    }
+
+    placeMarker(m,prop={'fill':"%23113388"}) { // 02. отрисовать маркер на карте
+    
+// console.log("@@ placeMarker", m);
+     olat = this.olat || m.lat;
+     olng = this.olng || m.lng;
+     
+     var dist = getDistanceFromLatLonInKm(m.lat, m.lng, olat,olng);
+     [this.olat, this.olng] = [m.lat, m.lng];
+     
+     this.path_total_dist += dist;
+     
+//     var dist = m.dist;
+     var color = ( typeof m.color !== 'undefined')? m.color : "#ffee00";
+     var pos = new google.maps.LatLng(m.lat, m.lng);    
+        
+     switch (m.gpxSet)
+        {
+            case "Велобайк":
+                   console.log("@@ placeMarker", m.gpxSet);
+                   icon = {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 2.5,
+                        fillColor: "#ff22dd",
+                        fillOpacity: 0.9,
+                        strokeWeight: 0.1
+                    };
+                    break;
+            default: 
+
+                    var markerTitle = m.name+'\n'+m.lat+','+m.lng;
+                    var text_lines = svg_text_to_lines(m.name, 15, 4);
+                    var l = 0;
+                    
+                    text_lines = text_lines.concat([parseFloat(m.lat).toFixed(5)+','+parseFloat(m.lng).toFixed(5)]);
+                    
+                    
+                    var m_text = $( text_lines ).map(function(k,v) {
+                        l++; return '<text x="20" y="'+(l*9)+'" font-family="Arial, sans-serif" fill="%23113388" stroke="none" \
+                              paint-order="stroke" text-anchor="left" font-size="9"  >'+v+'</text>'; 
+                        }).get().join('');
+                    
+                    if ( globalSettings.distOnOff.on ) 
+                    {
+//                    text_lines = text_lines.concat([dist]);
+                    var dist_info = this.path_total_dist.toFixed(2)+'+'+dist;
+                    m_text = m_text + '<rect x="19" y="'+(l*9)+'" width="'+dist_info.length*5.2+'" height="11" fill-opacity="0.80" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />';
+                    l++;
+                    m_text = m_text + '<text x="20" y="'+(l*9)+'" font-family="Arial, sans-serif" fill="%23bb3311" stroke="none" \
+                            paint-order="stroke" text-anchor="left" font-size="11"  >'+dist_info+'</text>';
+                    }          
+                    
+                    
+//                    console.log("@@ text=", text_lines);
+                    
+                    var url = m.url || 'data:image/svg+xml;utf-8, \
+                    <svg width="132" height="52" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+                    <circle fill="'+prop.fill+'" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
+                    <rect x="16" y="0" width="82" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />'
+                    +m_text+
+                    '</svg>';
+                    
+                    var icon = {
+                        anchor: new google.maps.Point(14, 14),
+                        size1: new google.maps.Size(60,30.26),
+                        url: url
+        }
+    }
+        
+       var marker = new google.maps.Marker({
+            name: m.name,
+            title: markerTitle,
+            dist:dist,
+            position: pos,
+            map: map,
+            m: m,
+            gpxSet: m.gpxSet,
+            idx: m.idx,
+            draggable: true,
+            icon: icon,
+          });
+      
+       
+        google.maps.event.addListener(marker, 'click', function () { markerClick(this);});
+        google.maps.event.addListener(marker, 'dblclick', function () { markerDel(this);});
+        google.maps.event.addListener(marker, 'dragend', callDrag(marker,1));
+        google.maps.event.addListener(marker, 'dragstart', callDrag(marker));
+        google.maps.event.addListener(marker, 'drag', callDrag(marker));
+
+        markers.push(marker);
+    
+        $('.baloon').on('click',function () {
+            console.log("@@ baloon click",this,this.idx,$(this).attr('idx'));
+            markerClick(this);
+            })
+    
+        drawPath();
+    //    map.panTo(pos);
+        // geocoding 
+    } // end method PlaceMarker
+}
+
+function updateMarkerIcon(m)
+{
+
+m.setMap(null);
+console.log("@@ updateMarkerIcon", m);
+url = m.url
+/*'data:image/svg+xml;utf-8, \
+      <svg width="52" height="32" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+        <circle fill="%23ff55aa" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
+        <rect x="16" y="0" width="27" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" /> \
+        <text x="29" y="9" font-family="Arial, sans-serif" fill="%23113388" stroke="none" paint-order="stroke" text-anchor="middle" font-size="9"  >'+m.title+'</text>\
+      </svg>';
+*/
+
+console.log("@@ url=",m.icon.url);
+
+new_m     = m.m; 
+new_m.url = url;
+new_m.lat = m.position.lat();
+new_m.lng = m.position.lng();
+
+markersArray.push(new_m); // заменить на update Marker
+markersArray.placeMarker(new_m,{'fill':"%23ff8811"});
+
+}  
+
+
+
+function svg_text_to_lines(t, width, height) {
+  
+    var words = t.split(/[\n ]+/).reverse();
+
+    w = words ;
+    
+    words = words.filter( function(e) { return e !== '' });
+    
+    [lines,line] = [[],[]];
+        
+    while (word = words.pop()) {
+      line.push(word);
+      text = line.join(" ");
+      if (text.length > width) { 
+        line = []; 
+        lines.push(text); 
+        text="";
+       }
+    }
+    
+  if(text !== "" ) lines.push(text); 
+
+
+//  console.log("@@ svg_text_to_lines \n", t, w, lines);
+
+
+  return lines;
+}
+
+function svg_wrap1(t, width, height) {
+  
+  var tspan;
+  
+  text = $(t);
+  
+  text.attr("dy",height);
+        var words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 1.1, // ems
+        y = text.attr("y"),
+        dy = parseFloat( text.attr("dy") ),
+        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+
+    console.log("@@ elem", text, words,tspan );
+    
+    while (word = words.pop()) {
+
+      line.push(word);
+      tspan.text(line.join(" "));
+
+      if (text.getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+      }
+    }
+
+  return tspan;
+}
+
+
+let markersArray = new _markers([]);  
+
+
+
 
 // end of ready
 
@@ -481,36 +526,72 @@ function callDrag(marker,drag_end=0) {
 //    console.log("@@ Callback", lat,lng, marker);
     
     markersArray.updateMarkerRow(marker);
+
+// 2020-02-10 Операции по завершению перетягивания маркера
     
-    if (drag_end) 
+    if (drag_end)  
         { 
          // map.panTo(marker.position);
 //          console.log("@@ updateTotalDist=", marker);
-          updateGeoInGlobalGpx(marker,lat,lng);
+          updateLatLngInGlobalGpx(marker,lat,lng);
           updateGeoInTable(marker,lat,lng);
-          updateMarkerIcon(marker);  
-          drawPath();
-          updateTotalDist(marker);
+          updateMarkersOnMap();         // все маркеры
+//          updateMarkerIcon(marker);   // одиночный маркер
+//          drawPath();
+//          markersArray.addMarkers();  // все маркеры
+//          updateTotalDist(marker);
         }
   };
 }
 
 
 
-function updateGeoInGlobalGpx(m,lat,lng)
+function updateLatLngInGlobalGpx(m,lat,lng)
 {           
-    console.log("@@ updateGeoInGlobalGpx m=", m.m.gpx_id, m);
+    console.log("@@ updateLatLngInGlobalGpx m=", m.m.gpx_id, m);
     
     [setName,pointName,pos] = m.m.gpx_id.split('|');
 
-    console.log("@@ updateGeoInGlobalGpx= n", pos, lat,lng,glob_gpx);
+    console.log("@@ updateLatLngInGlobalGpx= n", pos, lat,lng, glob_gpx);
 
 //    id = glob_gpx.findIndex(x => x.name === n[0]);
 
     glob_gpx[setName].points[pos].lat = lat;
     glob_gpx[setName].points[pos].lng = lng;
 
+    console.log("@@ updateLatLngInGlobalGpx= n", pos, lat,lng, glob_gpx);
 }
+
+// 2020.02.10 imporved version updateLatLngInGlobalGpx
+//
+
+
+function updateGpx(gpx_id, d=0 )
+{           
+   
+    [setName,pointName,pos] = gpx_id.split('|');
+
+//    id = glob_gpx.findIndex(x => x.name === n[0]);
+/*
+ID: "7"
+Status: ""
+name: "точка 7"
+description: "метро Университет "
+lat: "55.7423"
+lng: "37.6155"
+dist: "13.22"
+color: "#ffdd88"
+*/
+
+    glob_gpx[setName].points[pos].lat = lat;
+    glob_gpx[setName].points[pos].lng = lng;
+    glob_gpx[setName].points[pos].name = d.name || glob_gpx[setName].points[pos].name;
+    glob_gpx[setName].points[pos].description = d.description || glob_gpx[setName].points[pos].description;
+
+    console.log("@@ 07.updateLatLngInGlobalGpx=", d, d.name, pos, lat,lng, glob_gpx);
+
+}
+
 
 function updatePointOrderInGlobalGpx(setName)
 {           
@@ -523,8 +604,18 @@ function updatePointOrderInGlobalGpx(setName)
     $.each(gpx_set_trs, function (k,v)
     {   
         tds = $($(v).children('td')[0]).text();
-        console.log("@@@ updatePointOrderInGlobalGpx k v = \n",k,v,tds,glbp[tds]);
+        inp_idx = $($(v).children('input')[0]).text();
+        console.log("@@@ updatePointOrderInGlobalGpx k=%s tds=%s \n glbp[k]=%o \n glbp[tds]=%o \n v=%o \n", k, tds, glbp[k], glbp[tds], v);
         points.push( glbp[tds] );
+        
+        $($(v).children('td')[0]).text(k);
+        
+        rowId = setName+"|"+glbp[tds].name+"|"+k;
+        
+        $($(v).find('input')[0]).attr({gpx_id:rowId});
+        $(v).attr({gpx_id:rowId});
+        
+        console.log("@@ input=", $($(v).find('input')[0]));
         
 /*        p = {
         ID: k
@@ -543,8 +634,10 @@ function updatePointOrderInGlobalGpx(setName)
     }); 
 
     glob_gpx[setName].points = points;
+    
+//    gpxPointsToTable(glob_gpx[setName],setName);
 
-//    console.log("@@ updateGeoInGlobalGpx= n", pos, lat,lng,glob_gpx);
+console.log("@@ updatePointOrderInGlobalGpx= n", glob_gpx[setName].points, glbp, points);
 
 //    id = glob_gpx.findIndex(x => x.name === n[0]);
 
@@ -622,11 +715,6 @@ function markerDel(ob){
     }
 
 
-var elevator;
-var chart;
-//var infowindow = new google.maps.InfoWindow();
-var polyline;
-// Load the Visualization API and the columnchart package.
 
 
 MERCATOR={
@@ -1017,37 +1105,25 @@ function fitMarkers()
     
 }
 
-// elevation 
-function gpxGetSelected()
-{   
-    dataSet = $(".points input:checked");
-    
-    return dataSet;
-}
-
-
-function pathOnOff()
-{
-    if ($(event.target).is(":checked")) drawPath();
-    else clearPath();
-}
-
-
-function clearPath()
-{
-      if (polyline) polyline.setMap(null); 
-}
 
 function drawPath() {
     
-    gpx_selected = gpxGetSelected();
-    path_points = gpx_selected.map(function(i,e) {
+    if (polyline) polyline.setMap(null);
+
+    console.log ("@@ drawPath path_points", globalSettings.pathOnOff.on, polyline);
+    
+    if ( !globalSettings.pathOnOff.on) return;
+    
+    chkd = $("[gpx_id] input:checked");
+    
+    path_points = chkd.map(function(i,e) {
 
          v = e.closest('tr');
-         lat = $(v).find("td:eq(4)").text();
+         name = $(v).find("td:eq(2)").text();
+         lat = $(v).find("td:eq(4)").text(); // переделать на global_gpx
          lng = $(v).find("td:eq(5)").text();   
          
-//       console.log("@@@ lat,lng  ", lat,lng);
+//       console.log("@@@ lat,lng  ",name, lat,lng);
          
          var latLng = new google.maps.LatLng(lat,lng);
          return latLng ;
@@ -1058,8 +1134,6 @@ function drawPath() {
     chart = new google.visualization.AreaChart(document.getElementById('elevation-chart'));
 
     var path = path_points.slice(1);
-    
-    console.log ("@@ path_points", path, path_points);
     
     // Create a PathElevationRequest object using this array.
     // Ask for 256 samples along that path.
@@ -1103,11 +1177,11 @@ function plotElevation(results, status) {
     // Display a polyline of the elevation path.
     var pathOptions = {
       path: elevationPath,
-      strokeColor: '#2255aa',
-      opacity: 0.9,
+      strokeWeight: 2,
+      strokeColor: '#2255cc',
+      strokeOpacity: 0.75,
       map: map
     }
-    
     
     polyline = new google.maps.Polyline(pathOptions);
 
@@ -1164,12 +1238,22 @@ function plotElevation(results, status) {
         pos = elevationPath[e.row];
         console.log("@@@ pos", pos, e, elevations[e.row]);
         
-        while(el_markers.length) { el_markers.pop().setMap(null);  base_dist.setMap(null);   }
+        while(el_markers.length) { el_markers.pop().setMap(null); 
+//             base_dist.setMap(null);   
+             }
         
         var elev = elevations[e.row].elevation.toFixed(0); 
         
-        var image = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2238%22%20height%3D%2238%22%20viewBox%3D%220%200%2038%2038%22%3E%3Cpath%20fill%3D%22%23808080%22%20stroke%3D%22%23ccc%22%20stroke-width%3D%22.5%22%20d%3D%22M34.305%2016.234c0%208.83-15.148%2019.158-15.148%2019.158S3.507%2025.065%203.507%2016.1c0-8.505%206.894-14.304%2015.4-14.304%208.504%200%2015.398%205.933%2015.398%2014.438z%22%2F%3E%3Ctext%20transform%3D%22translate%2819%2018.5%29%22%20fill%3D%22%23fff%22%20style%3D%22font-family%3A%20Arial%2C%20sans-serif%3Bfont-weight%3Abold%3Btext-align%3Acenter%3B%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%3E' + elev + '%3C%2Ftext%3E%3C%2Fsvg%3E';
+        var image1 = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2238%22%20height%3D%2238%22%20viewBox%3D%220%200%2038%2038%22%3E%3Cpath%20fill%3D%22%23ff8080%22%20stroke%3D%22%23ccc%22%20stroke-width%3D%22.5%22%20d%3D%22M34.305%2016.234c0%208.83-15.148%2019.158-15.148%2019.158S3.507%2025.065%203.507%2016.1c0-8.505%206.894-14.304%2015.4-14.304%208.504%200%2015.398%205.933%2015.398%2014.438z%22%2F%3E%3Ctext%20transform%3D%22translate%2819%2018.5%29%22%20fill%3D%22%23fff%22%20style%3D%22font-family%3A%20Arial%2C%20sans-serif%3Bfont-weight%3Abold%3Btext-align%3Acenter%3B%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%3E' + elev + '%3C%2Ftext%3E%3C%2Fsvg%3E';
+        
+        var image = '<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">\
+        <path fill="#ff4040" stroke="#ccc" stroke-width=".5" \
+        d="M34.305 16.234c0 8.83-15.148 19.158-15.148 19.158S3.507 25.065 3.507 16.1c0-8.505 6.894-14.304 15.4-14.304 8.504 0 15.398 5.933 15.398 14.438z"/>\
+        <text transform="translate(19 18.5)" fill="#fff" style="font-family: Arial, sans-serif;font-weight:bold;text-align:center;" font-size="12" text-anchor="middle">' + elev + '</text></svg>';
+        
+        image = 'data:image/svg+xml,' + encodeURIComponent(image);
 
+//      console.log("@@ image1, image", image1, image);
         
         el_marker = new google.maps.Marker({ 
                 map : map,
@@ -1187,7 +1271,7 @@ function plotElevation(results, status) {
                 });
         el_markers.push(el_marker);
         
-//        map.panTo(pos);
+//      map.panTo(pos);
 
         
         });
@@ -1309,8 +1393,6 @@ var fixHelperModified = function(e, tr) {
 
         [setName,pointName,pos] = $(ui.item[0]).attr('gpx_id').split('|');
         
-
-        
         updatePointOrderInGlobalGpx(setName); 
                 
         drawPath();
@@ -1321,8 +1403,6 @@ var fixHelperModified = function(e, tr) {
     },
  updatePath = function(e, ui) {
     };
-
-
 
 
 
@@ -1358,8 +1438,6 @@ CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
       div.style.borderWidth = '1px';
       div.style.borderColor = '#AAAAAA';
       div.style.opacity =hmOpacity;
-      
-    
 
   
   if (zoom<17)
@@ -1561,7 +1639,7 @@ function UrlExists(url)
 
 function cacheOnOff()
 {
-    if ($(event.target).is(":checked")) checkCacheMultyZoomBySQL(map.getCenter(),map.getZoom()-3,6);
+    if (globalSettings.cacheOnOff.on) checkCacheMultyZoomBySQL(map.getCenter(),map.getZoom()-3,6);
     else clear_cache();
 }
 
@@ -1651,6 +1729,12 @@ function show_cache_legend()
     $('.buttons_panel').append("<br /><br /><div class=legend>"+dv+"</div>");
 };
 
-
+function gpxexec(proc)
+{
+    $(proc).each(function(k,v){
+        console.log ("@@ gpxexec", k,v );
+        eval(v+"()");
+    }) ;  
+}
 
     
