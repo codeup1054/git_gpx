@@ -9,8 +9,8 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript" src="/gpx/js/cookie/jquery.cookie.js"></script>
-    <script type="text/javascript" src="/gpx/js/google_sheets_api.js"></script>
     <script src="/gpx/js/gpx.js"></script> 
+    <script type="text/javascript" src="/gpx/js/google_sheets_api.js"></script>
 <!-- chart and elevation -->
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script src="https://www.google.com/uds/?file=visualization&amp;v=1&amp;packages=columnchart" type="text/javascript"></script> 

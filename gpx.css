@@ -171,6 +171,12 @@ td.geocoded {background-color:#ffee00;}
 }
 
 
+button.small
+{
+    padding: 3px 5px;
+    font-size:13px;
+}
+
 #datasetpanel
 {
     position: fixed;

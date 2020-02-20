@@ -1,4 +1,6 @@
 //document.write('<script type="text/javascript" src="js/cookie/jquery.cookie.js"></script>');
+//2019-11-15 global var init
+
 
 var map;
 var homeGeo = ["55.6442983","37.4959946"] // base
@@ -10,6 +12,8 @@ var globalSettings = {
                pathOnOff:{on:true,  name:'Путь', exec:["updateMarkersOnMap"]}
                };
 
+var context;  
+ context = {activePointId:""}; // текущий контекст строка набора
 
 var elevator;
 var chart;
@@ -17,9 +21,21 @@ var chart;
 var polyline;
 // Load the Visualization API and the columnchart package.
 
+var isKeyControll = false;
+
 
 $(document).ready(function()
 {   
+
+document.onkeydown = function(e) {
+  isKeyControll = ((e.ctrlKey == true));
+}
+
+document.onkeyup = function(e) {
+  isKeyControll = false;
+}
+
+
   // 2019-08-20 изменяемые панели.
 
 var resize= $("#left_panel");
@@ -242,15 +258,40 @@ class _markers {
                               paint-order="stroke" text-anchor="left" font-size="9"  >'+v+'</text>'; 
                         }).get().join('');
                     
+
+                     var elevationService = new google.maps.ElevationService();
+                     var latLng = new google.maps.LatLng(m.lat, m.lng);
+                     var elev =0;
+
+                     var requestElevation = {'locations': [latLng] }; // calback
+                    
+                     elevationService.getElevationForLocations(requestElevation, function(results, status) {
+                        if (status == google.maps.ElevationStatus.OK) {
+                          if (results[0]) {
+                           
+                           elev = parseFloat(results[0].elevation.toFixed(1));
+                            
+//                           console.log("@@ elevation",elev, m.name  ) ;
+                          }
+                        }
+                        else console.log("@@ elevation error");
+                      });
+                      
+                      
+
                     if ( globalSettings.distOnOff.on ) 
                     {
 //                    text_lines = text_lines.concat([dist]);
-                    var dist_info = this.path_total_dist.toFixed(2)+'+'+dist;
+                    var dist_info = this.path_total_dist.toFixed(1)+'+'+dist.toFixed(1) + '|' + elev;
                     m_text = m_text + '<rect x="19" y="'+(l*9)+'" width="'+dist_info.length*5.2+'" height="11" fill-opacity="0.80" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />';
                     l++;
                     m_text = m_text + '<text x="20" y="'+(l*9)+'" font-family="Arial, sans-serif" fill="%23bb3311" stroke="none" \
                             paint-order="stroke" text-anchor="left" font-size="11"  >'+dist_info+'</text>';
                     }          
+                    
+                    
+
+
                     
                     
 //                    console.log("@@ text=", text_lines);
@@ -288,14 +329,99 @@ class _markers {
         google.maps.event.addListener(marker, 'dragend', callDrag(marker,1));
         google.maps.event.addListener(marker, 'dragstart', callDrag(marker));
         google.maps.event.addListener(marker, 'drag', callDrag(marker));
+        google.maps.event.addListener(marker, "rightclick", function(e) {
+              
+              
 
+              for (prop in e) {
+                if (e[prop] instanceof MouseEvent) {
+                  
+                  var mouseEvt = e[prop];
+                  mouseEvt.preventDefault();
+
+                  var left = mouseEvt.clientX;
+                  var top = mouseEvt.clientY;
+            
+                  console.log("@@ rightClick",$(this)[0].m.gpx_id,$(this),context);
+
+                  var rowId = $(this)[0].m.gpx_id;
+
+                  context['activePointId'] = context['activePointId'] || rowId;
+                  
+                  var menuBox =$("<div marker_menu_id='"+rowId+"' id='markerMenu' \
+                  style='width:120px; height:150px; position:absolute; background-color:#ffffee; font-size:10px'>\
+                  <table width=100%><tr><td align=right><span class='ui-icon ui-icon-close' onclick='$(this).closest(\"div\").hide();'></span></td></tr></table>\
+                  <div contenteditable>"+rowId+"</div>\
+                  <br /></div>");
+                  
+                  
+                  // ********** 2020-02-18 показать/скрыть точку на карте
+                  
+                  var markerHideShow = $("<input id='hs_"+rowId+"' checked type='checkbox' >\
+                  <label for='hs_"+rowId+"'>Скрыть</label>");
+                  
+                  markerHideShow.on('change', function()
+                      {
+//                      console.log("hideShow.on('change'",rowId);  
+                      $("input[gpx_id='"+rowId+"']").prop("checked", false); 
+                      $("[marker_menu_id='"+rowId+"'").remove(); 
+                      updateMarkersOnMap();
+                      }
+                  )        
+                  
+                  menuBox.append(markerHideShow)
+                  // >>>>>> показать/скрыть точку на карте
+                  // ********** 2020-02-19 удалить точку из набора
+                  var markerRemove = $("<br /><span id='rm_"+rowId+"' class= 'ui-icon ui-icon-closethick'>Удалить</span><span>Удалить</span>");
+                  
+                  markerRemove.on('click', function()
+                      {
+                      [setName,pointName,pos] = rowId.split("|");
+
+                      console.log("hideShow.on('remove'", glob_gpx[setName].points[pos]);  
+
+//                      glob_gpx[setName].points.splice(pos,1);
+                      
+                      $("table[dataset='"+setName+"'] tr[gpx_id ='"+rowId+"']").remove();
+                      
+//                      gpxPointsToTable(glob_gpx[setName],setName);
+                      
+                      updatePointOrderInGlobalGpx(setName);
+                      
+                      updateMarkersOnMap();
+                      
+//                      updateMarkersOnMap();
+
+                      $("[marker_menu_id='"+rowId+"'").remove(); 
+
+                      }
+                  )        
+                  
+                  menuBox.append(markerRemove)
+
+                  // >>>>>> показать/скрыть точку на карте
+
+                  $("#map").append(menuBox);
+                  
+                  p = $('#map').position();
+
+                  console.log("@@ menuBox=", e, menuBox, mouseEvt, p );
+
+                  menuBox.css({
+                        left:(left - p.left +5),
+                        top: (top - p.top +5),
+                        display:"block"
+                        });
+            
+                  var menuDisplayed = true;
+                }
+              }
+            });
+        
+        
+        
         markers.push(marker);
-    
-        $('.baloon').on('click',function () {
-            console.log("@@ baloon click",this,this.idx,$(this).attr('idx'));
-            markerClick(this);
-            })
-    
+   
         drawPath();
     //    map.panTo(pos);
         // geocoding 
@@ -519,8 +645,8 @@ function deg2rad(deg) {
 function callDrag(marker,drag_end=0) {
   return function() {
 
-    lat  = marker.position.lat().toFixed(4); //.toFixed(4);
-    lng  = marker.position.lng().toFixed(4)//.toFixed(4);
+    lat  = marker.position.lat().toFixed(5); //.toFixed(4);
+    lng  = marker.position.lng().toFixed(5)//.toFixed(4);
     dist = getDistanceFromLatLonInKm(lat,lng);
 
 //    console.log("@@ Callback", lat,lng, marker);
@@ -797,7 +923,6 @@ var mapOptions = {
 
       });
 
-
    google.maps.event.addListener(map,'center_changed',function(){
          ifMapChanged();
       });
@@ -805,14 +930,27 @@ var mapOptions = {
   
    google.maps.event.addListener(map,'click',function(e){ // select div rectangle on map
         
-        int_latlng = {lat:e.latLng.lat(),lng:e.latLng.lng()};
-
-        var b=MERCATOR.getTileBounds(MERCATOR.getTileAtLatLng(int_latlng,this.getZoom()));
+       if (!isKeyControll) return; 
         
-        checkCacheMultyZoomBySQL(int_latlng, this.getZoom(),6)
+//       addMarker(map, {title:"Новая точка"}, e.latLng)
 
+              
+       setName = context.activePointId.split("|")[0];
+       
+       console.log("@@ click addPoint",setName, e.latLng.lat());
+       
+       i = {name:"Новая точка "+ glob_gpx[setName].points.length,
+                description:"Описание",
+                lat:e.latLng.lat().toFixed(5) || "55.4",
+                lng:e.latLng.lng().toFixed(5) || "37.45"}
+       
+       addPoint(setName,i);
+
+        
+//        int_latlng = {lat:e.latLng.lat(),lng:e.latLng.lng()};
+//        var b=MERCATOR.getTileBounds(MERCATOR.getTileAtLatLng(int_latlng,this.getZoom()));
+//        checkCacheMultyZoomBySQL(int_latlng, this.getZoom(),6)
 //        cacheMap(b,this.getZoom(),2);
-        
 //       rect.setOptions({bounds:new google.maps.LatLngBounds(new google.maps.LatLng(b.sw.lat,b.sw.lng),new google.maps.LatLng(b.ne.lat,b.ne.lng)),
 //                      map:map});
 
@@ -1039,8 +1177,8 @@ function getGeo(addr) {  // используется при геокодиров
 return function(results, status) {
   if (status == google.maps.GeocoderStatus.OK) {
     
-    lat = results[0].geometry.location.lat().toFixed(4);
-    lng = results[0].geometry.location.lng().toFixed(4);
+    lat = results[0].geometry.location.lat().toFixed(5);
+    lng = results[0].geometry.location.lng().toFixed(5);
     
 //    tdgeos = $('.datasets td:contains('+addr+')').parent("tr").find("td:eq(4),td:eq(5),td:eq(6)")
    m = { 
@@ -1088,8 +1226,8 @@ function fitMarkers()
 
     for (var i = 1; i < markers.length; i++) {
 //    for (var i = 1; i < 5; i++) {
-    lat = markers[i].getPosition().lat().toFixed(4);
-    lng = markers[i].getPosition().lng().toFixed(4);
+    lat = markers[i].getPosition().lat().toFixed(5);
+    lng = markers[i].getPosition().lng().toFixed(5);
     
     if ( lat == 'NaN' || lng == 'NaN'  ) continue;
     
@@ -1110,7 +1248,7 @@ function drawPath() {
     
     if (polyline) polyline.setMap(null);
 
-    console.log ("@@ drawPath path_points", globalSettings.pathOnOff.on, polyline);
+//    console.log ("@@ drawPath path_points", globalSettings.pathOnOff.on, polyline);
     
     if ( !globalSettings.pathOnOff.on) return;
     
@@ -1153,15 +1291,13 @@ function drawPath() {
 
 
 var el_markers = [];
-
+var polylines = [];
 
 function plotElevation(results, status) {
   
-  if (polyline) 
-   {
-//    console.log("@@@ polyline",polyline);
-    polyline.setMap(null);
-   }  
+  while(polylines.length) { polylines.pop().setMap(null); }
+  
+  if (polyline) { polyline.setMap(null); }  
     
   if (status == google.maps.ElevationStatus.OK) {
     elevations = results;
@@ -1169,9 +1305,46 @@ function plotElevation(results, status) {
     // Extract the elevation samples from the returned results
     // and store them in an array of LatLngs.
     var elevationPath = [];
+    
+    var elev_max = -11000;
+    var elev_min = 9000;
+
+    for (var i = 0; i < results.length; i++) {
+        elev_max = Math.max(elevations[i].elevation,elev_max);
+        elev_min = Math.min(elevations[i].elevation,elev_min);
+      }
+
+
     for (var i = 0; i < results.length; i++) {
       elevationPath.push(elevations[i].location);
+     
+         if( i > 1 )
+         {
+
+         color = heatMapColorforValue((elevations[i].elevation - elev_min)/(elev_max - elev_min));
+         
+         console.log("@@ elevationPath.slice", i, elev_max, elev_min, color, elevations[i-2]);
+         
+         
+         var pathOptions = {
+          path: elevationPath.slice(i-2,i),
+          strokeWeight: 4,
+//          strokeColor: (i%2)?'#2255cc':'#ff4422' ,
+          strokeColor: color ,
+          strokeOpacity: 0.75,
+          map: map
+         } 
+         polyline = new google.maps.Polyline(pathOptions);
+         
+         polylines.push(polyline);
+            
+        }
+      
+      
 //      console.log("@@@ lat, lng", elevations[i].location.lat());
+
+    
+
     }
 
     // Display a polyline of the elevation path.
@@ -1183,7 +1356,7 @@ function plotElevation(results, status) {
       map: map
     }
     
-    polyline = new google.maps.Polyline(pathOptions);
+    //polyline = new google.maps.Polyline(pathOptions);
 
     // Extract the data from which to populate the chart.
     // Because the samples are equidistant, the 'Sample'
@@ -1247,7 +1420,7 @@ function plotElevation(results, status) {
         var image1 = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2238%22%20height%3D%2238%22%20viewBox%3D%220%200%2038%2038%22%3E%3Cpath%20fill%3D%22%23ff8080%22%20stroke%3D%22%23ccc%22%20stroke-width%3D%22.5%22%20d%3D%22M34.305%2016.234c0%208.83-15.148%2019.158-15.148%2019.158S3.507%2025.065%203.507%2016.1c0-8.505%206.894-14.304%2015.4-14.304%208.504%200%2015.398%205.933%2015.398%2014.438z%22%2F%3E%3Ctext%20transform%3D%22translate%2819%2018.5%29%22%20fill%3D%22%23fff%22%20style%3D%22font-family%3A%20Arial%2C%20sans-serif%3Bfont-weight%3Abold%3Btext-align%3Acenter%3B%22%20font-size%3D%2212%22%20text-anchor%3D%22middle%22%3E' + elev + '%3C%2Ftext%3E%3C%2Fsvg%3E';
         
         var image = '<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">\
-        <path fill="#ff4040" stroke="#ccc" stroke-width=".5" \
+        <path fill="#ffaa20" stroke="#ccc" stroke-width=".5" \
         d="M34.305 16.234c0 8.83-15.148 19.158-15.148 19.158S3.507 25.065 3.507 16.1c0-8.505 6.894-14.304 15.4-14.304 8.504 0 15.398 5.933 15.398 14.438z"/>\
         <text transform="translate(19 18.5)" fill="#fff" style="font-family: Arial, sans-serif;font-weight:bold;text-align:center;" font-size="12" text-anchor="middle">' + elev + '</text></svg>';
         
@@ -1421,8 +1594,8 @@ CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
                                 +zoom+','
                                 +tile.x+','
                                 +tile.y+'<br />'
-                                + tileBounds.ne.lat.toFixed(4)+','
-                                + tileBounds.ne.lng.toFixed(4)+','
+                                + tileBounds.ne.lat.toFixed(5)+','
+                                + tileBounds.ne.lng.toFixed(5)+','
                                 +"</div>";
                 break;
         default:        
@@ -1530,8 +1703,8 @@ function ifMapChanged()
 //    return; 
 //        console.log("@@ map",map);
          c = map.getCenter();   
-         location_search = c.lat().toFixed(3)+','
-                    + c.lng().toFixed(3)
+         location_search = c.lat().toFixed(5)+','
+                    + c.lng().toFixed(5)
                     +','+ map.getZoom()
                     +','+ hmOpacity
                     +','+ dinfo;   
