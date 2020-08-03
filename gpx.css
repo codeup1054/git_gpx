@@ -1,3 +1,9 @@
+div[set_id]
+{
+    background-color:whitesmoke;
+}
+
+
 .wp_panel
 {
 position1: absolute;
@@ -124,17 +130,24 @@ td.geocoded {background-color:#ffee00;}
     clear:both;
 }
 
+#elevation-chart, 
+      {
+       border:0px solid gray;
+       }
 
-#elevation-chart{position: fixed;
-               float:left bottom;  
-               display:block;  
-               bottom:0px;
-               padding:0px 0px 0px 0px; 
-               left:0px;
-               width:calc(100% - 10px);
-               height:150px;
-               border:0px solid green;
-               }
+#elevation-chart-div, #debug
+      {
+       position: absolute;
+       float:left bottom;  
+       display1:block;  
+       top:0px;
+       padding:0px 0px 0px 0px; 
+       left:10px;
+       top:calc(100% - 310px);
+       width:570px;
+       height:300px;
+       border:1px solid gray;
+       }
                
 
 

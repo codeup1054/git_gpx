@@ -18,12 +18,38 @@ if (isset ($_REQUEST["save_json"]))
         fclose($fh);
         print ( "\n<br />filesize=".filesize ($myFile));
     }
+
+
      
+if (isset ($_REQUEST["save_db"]))
+    {
+    tm();
+    $data =  $_REQUEST["save_db"];
+    $gsql->saveGlobGpxDB($data); 
+    print ( "\n<br />filesize=");
+    tm('>>>');
+    }
+
+if (isset ($_REQUEST["save_sql"]))
+    {
+    tm();
+    $data =  $_REQUEST["save_sql"];
+    $gsql->saveGlobGpxDB($data); 
+    print ( "\n<br />filesize=");
+    tm('>>>');
+    }
+
+if (isset ($_REQUEST["get_gpx_set_DB"]))    { 
+
+    header('Content-Type: application/json');
+    print $gsql->getSetFromDB(); 
+    
+    }    
 
 if (isset ($_REQUEST["get_cache_stat"]))
     {   
         $depth = isset($_REQUEST["depth"]) ? $_REQUEST["depth"] : 10;
-        
+
         switch ($_REQUEST["get_cache_stat"])
         {
           case 'min': $int = 60*6; break;   
@@ -59,7 +85,7 @@ if (isset ($_REQUEST["get_cache_stat"]))
 
 if (isset ($_REQUEST["get_cache_list"]))
     {   
-//        print_r ($_REQUEST);
+//       print_r ($_REQUEST);
         
         $tiles = array();
         

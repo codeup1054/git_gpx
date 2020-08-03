@@ -1,86 +1,33 @@
-<!DOCTYPE html>
 <html>
   <head>
-    <title>Showing Pixel and Tile Coordinates</title>
-    <meta name="viewport" content="initial-scale=1.0">
-    <meta charset="utf-8">
-    <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-      #map {
-        height: 100%;
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['bar']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Year', 'Sales', 'Expenses', 'Profit'],
+          ['2014', 1000, 400, 200],
+          ['2015', 1170, 460, 250],
+          ['2016', 660, 1120, 300],
+          ['2017', 1030, 540, 350]
+        ]);
+
+        var options = {
+          chart: {
+            title: 'Company Performance',
+            subtitle: 'Sales, Expenses, and Profit: 2014-2017',
+          }
+        };
+
+        var chart = new google.charts.Bar(document.getElementById('columnchart_material'));
+
+        chart.draw(data, google.charts.Bar.convertOptions(options));
       }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-    </style>
+    </script>
   </head>
   <body>
-    <div id="map"></div>
-    <script>
-      function initMap() {
-        var chicago = new google.maps.LatLng(55.850, 37.650);
-
-        var map = new google.maps.Map(document.getElementById('map'), {
-          center: chicago,
-          zoom: 3
-        });
-
-        var coordInfoWindow = new google.maps.InfoWindow();
-        coordInfoWindow.setContent(createInfoWindowContent(chicago, map.getZoom()));
-        coordInfoWindow.setPosition(chicago);
-        coordInfoWindow.open(map);
-
-        map.addListener('zoom_changed', function() {
-          coordInfoWindow.setContent(createInfoWindowContent(chicago, map.getZoom()));
-          coordInfoWindow.open(map);
-        });
-      }
-
-      var TILE_SIZE = 256;
-
-      function createInfoWindowContent(latLng, zoom) {
-        var scale = 1 << zoom;
-
-        var worldCoordinate = project(latLng);
-
-        var pixelCoordinate = new google.maps.Point(
-            Math.floor(worldCoordinate.x * scale),
-            Math.floor(worldCoordinate.y * scale));
-
-        var tileCoordinate = new google.maps.Point(
-            Math.floor(worldCoordinate.x * scale / TILE_SIZE),
-            Math.floor(worldCoordinate.y * scale / TILE_SIZE));
-
-        return [
-          'Chicago, IL',
-          'LatLng: ' + latLng,
-          'Zoom level: ' + zoom,
-          'World Coordinate: ' + worldCoordinate,
-          'Pixel Coordinate: ' + pixelCoordinate,
-          'Tile Coordinate: ' + tileCoordinate
-        ].join('<br>');
-      }
-
-      // The mapping between latitude, longitude and pixels is defined by the web
-      // mercator projection.
-      function project(latLng) {
-        var siny = Math.sin(latLng.lat() * Math.PI / 180);
-
-        // Truncating to 0.9999 effectively limits latitude to 89.189. This is
-        // about a third of a tile past the edge of the world tile.
-        siny = Math.min(Math.max(siny, -0.9999), 0.9999);
-
-        return new google.maps.Point(
-            TILE_SIZE * (0.5 + latLng.lng() / 360),
-            TILE_SIZE * (0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI)));
-      }
-    </script>
-    <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCqtLzdiGvGIu85wF1C7w4UKdUncnwgF0M&callback=initMap">
-    </script>
+    <div id="columnchart_material" style="width: 800px; height: 500px;"></div>
   </body>
 </html>

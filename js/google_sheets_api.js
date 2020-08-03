@@ -1,16 +1,107 @@
 var glob_gpx = {};
+var glob_gpx_set = {cols:["set_id",
+                          "set_name",
+                          "set_description",
+                          "set_type",
+                          "set_prop",
+                          "user_id",
+                          "ord"],
+                    el: []
+                    };
+var glob_gpx_points = {};
+
+var glob_gpx_to_save = {};
+
 var gpx_line = [];
 var setCounter;
 var deferreds = [];
 
 
 
-function makeApiCall(action, apiCallData="*") {
+function makeApiCall(action = "get_gpx_DB", apiCallData="*") {
   
-  console.log("@@@ save_google", action, apiCallData, $(this));
+//  console.log("@@@ action[",action,"]" ,apiCallData, $(this));
   
   switch (action)
       {
+      case "save_db":
+            $.get('act.php',{ save_db: gpx_id_to_save },
+                function (response) { 
+                    glob_gpx = response.data; }
+                );
+                
+            break;
+      
+      case "save_sql":
+            json_gpx = JSON.stringify(glob_gpx);
+
+            console.log("@@ save_gpx_to_db", glob_gpx);
+            
+            $.ajax
+                ({
+                    type: "POST",
+                    dataType : 'json',
+                    async: false,
+                    url: 'act.php',
+                    data: { save_sql: json_gpx },
+                    success: function () {alert("Thanks!"); },
+                    failure: function() {alert("Error!");}
+                });
+            
+            break; 
+
+      case "get_gpx_DB":
+//            tm('get_gpx_DB >>> Start');
+            $.get('act.php',{ get_gpx_set_DB: "1,17" },
+                function (response) {
+
+                glob_gpx = response.data;
+                
+                console.log('@@ glob_gpx ', glob_gpx  );
+                
+                $('#left_panel').html(response['html']);  //tm('02. get_gpx_DB >>>');
+                
+                $('#left_panel table[points] tr td[ed]').attr("contenteditable",true); //tm('03. get_gpx_DB >>>');
+
+                $('input#all').on('change', function(e){
+                    isСheck = $(this).prop('checked');
+                    set_id = $(this).attr('set_id');
+                    $('#left_panel table[points='+set_id+'] input').prop('checked', isСheck);
+                    
+                    console.log('input#all', set_id );
+                    
+                    updateMarkersOnMap();
+
+                });
+                
+                
+                gpxPointsToTable(glob_gpx[19],19); // показываем 19-ый набор точек
+
+                
+                $('span[set_show_hide]').on('click', function(e){
+                        el = $(this);
+                        set_id  = el.closest('div').attr('set_id');
+                        
+//                        console.log("@@ set_show_hide",set_id, glob_gpx[set_id].points);
+                        
+                        gpxPointsToTable(glob_gpx[set_id],set_id);
+                        
+                        if(el.hasClass("ui-icon-triangle-1-s"))
+                        {
+                            el.attr('class','ui-icon ui-icon-triangle-1-n');
+                            $('#gpx_set_table_'+set_id).removeClass('hide');
+                        }
+                        else
+                        {
+                            el.attr('class','ui-icon ui-icon-triangle-1-s');
+                            $('#gpx_set_table_'+set_id).addClass('hide');
+                        }
+                     }); // end on clik
+                });
+            
+            break;
+
+
       case "get_sheets_names":
             sheet_metadata = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
             sheets = sheet_metadata.get('sheets', '')
@@ -36,7 +127,8 @@ function makeApiCall(action, apiCallData="*") {
                 });
             
             break; 
-
+      
+            
       case "read_json":          
             gpxFromJson();
             break; 
@@ -46,8 +138,6 @@ function makeApiCall(action, apiCallData="*") {
             break; 
 
       case "save_google":  
-
-
               var vals = new Array();
               
               ds = apiCallData;
@@ -91,13 +181,19 @@ function makeApiCall(action, apiCallData="*") {
 function gpxFromJson()  
 {           
 //        return; 
-        
         glob_gpx = [];
-        tm('start read JSON');
+        //tm('start read JSON');
         $.get({ url: 'data/gpx.json', cache: false },function(data) {
                console.log("@@ read_json ",data);
                glob_gpx = data;
-               gpxSetNamesToTable(data);
+//               gpxSetNamesToTable(data);
+               console.log("@@ gpxFromJson", data );
+               $.each(data,function(k,v) { 
+                console.log("@@ gpxFromJson", k,v );
+                $('#left_panel').append(k+"</br>"); 
+                
+                } ); 
+               
             });
         tm('end read JSON');
 }
@@ -116,7 +212,7 @@ function gpxSetNamesToTable(gpx_names)
        if(typeof v.points !== 'undefined')
        {
        $(".datasetcheckbox").append("<div class='checkbox_field' >\
-        <div check="+v.name+"><input type=checkbox id='"+v.name+"' gpx_set_name='"+v.name+"'  onchange='gpxSetCheckSelector(this.id)'>" +
+        <div check="+v.name+"><input type=checkbox id='"+v.name+"' gpx_set_name='"+v.name+"' onchange='gpxSetCheckSelector(this.id)'>" +
         "<label for='"+v.name+"'><gpx_total>("+v.points.length+") </gpx_total>"+v.name+"</label></div></div>");
         gpxPointsToTable(v,k);
        }
@@ -133,7 +229,6 @@ function gpxSetNamesToTable(gpx_names)
 
 function isLat(lat) {  return isFinite(lat) && Math.abs(lat) <= 90; }
 function isLon(lng) {  return isFinite(lng) && Math.abs(lng) <= 180; }
-
 
 function gpxSetCheckSelector(id)
 {   
@@ -158,7 +253,6 @@ function gpxPoinsSelectTableByID(id, isСheck)
 }
 
 
-
 function gpsUpdateSetType(sel)
 {   
     setId = $(sel).attr('set_id');
@@ -171,10 +265,8 @@ function gpsUpdateSetType(sel)
 function toggleSet(el)
 {
     setId = $(el).attr('set_id');
-    $("[dataset='"+setId+"'] input").prop('checked', $(el).prop('checked'));
-    
+    $("[set_id='"+setId+"'] input[gpx_id]").prop('checked', $(el).prop('checked'));
 }
-
 
 
 function gpxPointsToTable(v,id)
@@ -195,18 +287,18 @@ function gpxPointsToTable(v,id)
 */  
 
     points = v.points; 
-    setName = v.name;
+    setName = v.set_name;
     
-    options = ['path','poi'].map(function(x) { return "<option "+ ((v.meta.type == x )? "selected":"")+">"+x+"</option>"; } ).join("")
+    options = [0,1].map(function(x) { return "<option "+ ((v.set_type == x )? "selected":"")+">"+x+"</option>"; } ).join("")
     
-//    console.log("@@ type options", options );
+//  console.log("@@ type options", v, id);
     
-    setInfo = "<table id='prop_table_"+v.name+"' class=stab>"+
-              "<tr><td>Набор:</td><td><input value='"+v.name+"'></input></td><td>\
-              <button tab_id='"+v.name+"' class='ui-button ui-widget ui-corner-all small' onclick=\"makeApiCall(\'save_google\','"+v.name+"'); console.log(\'***\');\">В Google</button></td></tr>"+
-              "<tr><td>Тип:</td><td><select set_name='"+v.name+"' set_id='"+id+"' onchange='gpsUpdateSetType(this);' >"+options+"</select></td></tr>"+
+    setInfo = "<table id='prop_table_"+v.set_id+"' class=stab>"+
+              "<tr><td>Набор:</td><td><input value='"+setName+"'></input></td><td>\
+              <button tab_id='"+setName+"' class='ui-button ui-widget ui-corner-all small' onclick=\"makeApiCall(\'save_sql\','"+v.name+"'); console.log(\'***\');\">В DB</button></td></tr>"+
+              "<tr><td>Тип:</td><td><select set_name='"+setName+"' set_id='"+id+"' onchange='gpsUpdateSetType(this);' >"+options+"</select></td></tr>"+
               "<tr>" +
-                  "<td><span class='ui-icon ui-icon-plus' add_point_to_set='"+v.name+"' onclick='addPoint(\""+v.name+"\");'></span></td>" +        
+                  "<td><span class='ui-icon ui-icon-plus' add_point_to_set='"+setName+"' onclick='addPoint(\""+v.name+"\");'></span></td>" +        
                   "<td>Добавить точку</td>"+        
                   "<td></td>"+        
                   "<td></td>"+        
@@ -214,10 +306,9 @@ function gpxPointsToTable(v,id)
                   "</tr>";          
               "</table>";
     
-    
-    
+        
     row = "<tr class='header'><td> </td>" +
-                  "<td><input set_id ='"+id+"' onchange='toggleSet(this)' type='checkbox'/></td>" +        
+                  "<td><input set_type = '"+v.set_type+"' set_id ='"+id+"' onchange='toggleSet(this)' type='checkbox'/></td>" +        
                   "<td>Наименование</td>"+        
                   "<td geo>Описание</td>"+        
                   "<td>Широта</td>"+        
@@ -226,21 +317,23 @@ function gpxPointsToTable(v,id)
                   "<td class='hide'>Цвет</td>"+ // color
                   "<td>Расстояния</td>"+
                   "</tr>";
-    
 
-    hide = (setName != '1Мещ-Сколково')?"":"hide";
-  
-    $(".datasets").append("<div class='wp_panel' "+hide+" id='gpx_set_table_"+setName+"'>"
+    hide = (v.set_id == 2)?"":"hide";
+    
+    $("[set_id="+v.set_id+"] [set_points]").html("");
+    
+    $("[set_id="+v.set_id+"] [set_points]").append("<div class='wp_panel' "+hide+" id='gpx_set_table_"+v.set_id+"'>"
                     + setInfo +"<table class='tab points' dataset='"+setName+"'></table><div>");
 
     var row_cnt;
-      
+    
+    var dist_total = 0;
+  
     $.each(points, function( k,v)
         {   
 //            if(k == 0) { continue;}
 //            console.log("@@ eachGPX ", v );
-            tdist_html = 0;
-            dist_total = 0;
+            dist_next = tdist_html = 0;
 //          remask = '^-?[0-9]{1,3}(?:\.[0-9]{1,10})?$';
             
          if ( typeof o_lat !== 'undefined' && ( isLat( v.lat ) && isLon( v.lng) ) )
@@ -248,7 +341,8 @@ function gpxPointsToTable(v,id)
 //                console.log("@@ cells", v.lat, (typeof o_lat) );
                 dist_next = getDistanceFromLatLonInKm(v.lat, v.lng, o_lat, o_lng);
                 dist_total += isNaN(dist_next)? 0: dist_next; // добавляем если число  
-                tdist_html = dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>"; 
+//                tdist_html = dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>"; 
+                tdist_html = dist_total.toFixed(2); 
             } 
             
             o_lat = v.lat;  
@@ -256,10 +350,8 @@ function gpxPointsToTable(v,id)
            
 //continue;
             row_cnt = k;
-            rowId = setName+"|"+v.name+"|"+k;
-            
+            rowId = setName+"|"+v.name+"|"+k+"|"+v.set_id+"|"+v.gpx_id;
 //            console.log("@@ context",context);
-            
             context['activePointId'] = context['activePointId'] || rowId;
             
             row += "<tr gpx_id='"+rowId+"'><td>"+k+"</td>" +
@@ -270,12 +362,11 @@ function gpxPointsToTable(v,id)
                   "<td>"+v.lng+"</td>"+
                   "<td>"+v.dist+"</td>"+
                   "<td class='hide'>"+v.color+"</td>"+ // color
+                  "<td>"+  dist_next  +"</td>"+
                   "<td>"+  tdist_html  +"</td>"+
                   "</tr>";
         });
 
-    
-        
         $("label[for='"+setName+"'] gpx_total").text("("+ points.length +") ");
         $("[dataset ="+setName+"]").html("");
         $("[dataset ="+setName+"]").append(row);
@@ -334,7 +425,6 @@ function gpxPointsToTable(v,id)
 //            console.log("@@ map.panTo tr.on('click')=", el,lat);
         });
 
-
         tm("addToTable"+setName);
         
         $(".tab tbody").sortable({
@@ -346,7 +436,7 @@ function gpxPointsToTable(v,id)
 
 
 
-function addPoint(setName,i={name:"Новая точка",
+function addPoint(set_id,i={name:"Новая точка",
                 description:"Описание",
                 lat:"55.4",
                 lng:"37.45"}) {
@@ -362,9 +452,9 @@ dist: "13.22"
 color: "#ffdd88"
 
 */
-            gpx_cnt = $("[dataset ="+setName+"] tr[gpx_id]").length;
+/*            gpx_cnt = $("[dataset ="+set_id+"] tr[gpx_id]").length;
               
-            rowId = setName+"|Новая|"+gpx_cnt;
+            rowId = setName+"|Новая|"+set_id+"|"+gpx_cnt;
 
             row = "<tr gpx_id='"+rowId+"'><td>"+gpx_cnt+"</td>" +
                   "<td><input checked gpx_id='"+rowId+"' type='checkbox' onclick='updateMarkersOnMap();'/></td>" +        
@@ -376,10 +466,11 @@ color: "#ffdd88"
                   "<td class='hide'></td>"+ // color
                   "<td></td>"+
                   "</tr>";
-
-            glob_gpx[setName].points.push(i);
-
-            $("[dataset ="+setName+"]").append(row);
+*/
+            glob_gpx[set_id].points.push(i);
+            
+            gpxPointsToTable(glob_gpx[set_id],set_id);
+            
             
             console.log("@@ новая точка = ", rowId,gpx_cnt,setName);
             gpxexec(["updateMarkersOnMap"]);
@@ -534,7 +625,10 @@ function gpxFromGoogle() {
     }
 
     function handleClientLoad() {
-      gapi.load('client:auth2', initClient);
+
+        makeApiCall('get_gpx_DB');  // load from DB
+
+//      gapi.load('client:auth2', initClient);  // google load init  
     }
 
     function updateSignInStatus(isSignedIn) {
@@ -746,24 +840,29 @@ function updateMarkersOnMap(id = 0 )
     
    while(markers.length) { markers.pop().setMap(null);   }
    markersArray = new _markers([]);
-   chkd = $("input[gpx_id]:checked");
+   chkd = $("[gpx_id] input:checked");
 
-//   console.log("@@ updateMarkersOnMap chkd =", chkd );
+//   console.log("@@ updateMarkersOnMap 00 chkd =", chkd, glob_gpx );
     
    $.each(chkd, function(k,v) {
-           
+
+//          gpx_id = $(v).closest('tr').attr('gpx_id'); 
           gpx_id = $(v).attr('gpx_id'); 
-//          console.log("@@ gpx_id=", gpx_id,v); 
+          set_id = $(v).closest('div[set_id]').attr('set_id');
+          
+          g_set = glob_gpx[set_id];
+
           [setName,pointName,pos] = gpx_id.split("|");
 
-//          console.log("@@ updateMarkersOnMap each=", k,v, setName, pointName , pos );
-
-
-          if ( typeof glob_gpx[setName].points[pos] === 'undefined' )  return true;   
-
-
-          p = glob_gpx[setName].points[pos];
+//          console.log("@@@ gpx_id=", gpx_id,set_id, g_set.points[pos]);
           
+
+          if ( typeof g_set.points[pos] === 'undefined' )  return true;   
+
+          p = g_set.points[pos];
+          
+//          console.log("@@ updateMarkersOnMap each=", [setName,pointName,pos], glob_gpx[set_id]);
+
           m = { 'name':p.name,
                  'gpx_id':gpx_id,
                  'gpxSet':setName,
@@ -780,6 +879,8 @@ function updateMarkersOnMap(id = 0 )
    }); // end each
 
   console.log("@@ updateMarkersOnMap markersArray=", glob_gpx, markersArray);
+//  console.log("@@ updateMarkersOnMap markersArray=", chkd, markersArray);
+
   markersArray.addMarkers();
 //  drawPath();
 //  savegpx();

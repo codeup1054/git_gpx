@@ -364,7 +364,7 @@ tm("7. inserts end >>>>");
 <!-- <img src = "http://msp.opendatahub.ru/gpx/strava.php?z=14&x=9894&y=5128"/> --> 
 </html>
 <script>
-$(document).ready( function(){ getCacheStat("min"); }
+$(document).ready( function(){ getCacheStat("d"); }
 );
 
 </script>

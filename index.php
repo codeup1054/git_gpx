@@ -4,20 +4,44 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
     <link rel="icon" href="/favicon.ico" type="image/x-icon"/>
     <link href="/gpx/gpx.css" rel="stylesheet" type="text/css" />
+    
 <!--    <script type="text/javascript" src="js/jquery.js"></script> -->
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+
+    
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript" src="/gpx/js/cookie/jquery.cookie.js"></script>
     <script src="/gpx/js/gpx.js"></script> 
     <script type="text/javascript" src="/gpx/js/google_sheets_api.js"></script>
+
+
+<!--   bootstrap  -->    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<!--   ->    
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<!--   bootstrap  -->
+
+
 <!-- chart and elevation -->
+
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script src="https://www.google.com/uds/?file=visualization&amp;v=1&amp;packages=columnchart" type="text/javascript"></script> 
+    
+    <script>
+      google.charts.load('current', {packages: ['columnchart']});
+      google.charts.load('current', {packages: ['corechart']});
+//      google.charts.setOnLoadCallback(drawChart);
+    </script>
+    
+<!--    <script src="https://www.google.com/uds/?file=visualization&amp;v=1&amp;packages=columnchart" type="text/javascript"></script> --> 
 
 </head>
-
 <body>
+
 <?php
 
 header('Content-Type: text/html; charset=utf-8');
@@ -29,7 +53,7 @@ $content  = array();
 
 function trm($st)
 {
-    return preg_replace( "/\r|\n|&nbsp| /", "", trim($st ));
+    return preg_replace( "/\r|\n|&nbsp| /", "", trim($st));
 }
 
 
@@ -115,7 +139,10 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
 
 
 
+
+
 <div id="container">
+           <input type='checkbox'/>
     <div id="left_panel">
            <div id="datasetpanel">
                <div class="datasetcheckbox"></div>
@@ -126,6 +153,8 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
     </div>
     <div id="right_panel">
         <div class="buttons_panel">
+            <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('get_gpx_DB')">Из DB</button>
+            <button class="ui-button ui-widget ui-corner-all btn btn-success" onclick="makeApiCall('save_sql')">В DB</button>
             <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('read_google')">Из Google</button>
             <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('save_google')">В Google</button>
             <button class="ui-button ui-widget ui-corner-all" onclick="makeApiCall('read_json')">Из JSON</button>
@@ -134,6 +163,9 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
             <button id="zoom_info" class="ui-button ui-widget ui-corner-all"  onclick="">11</button>
                 <button id="button  signin-button" class="sign"  onclick="handleSignInClick()">Sign in</button>
                 <button class='sign' id="button signout-button" onclick="handleSignOutClick()">Sign out</button>
+                <a href="http://msp.opendatahub.ru/gpx/du.php">Лог</a>
+                <a target="_blank" href="https://my.apify.com/actors/9rJZagTpspnLsgeX6#/source">Apify</a>
+                
             <fieldset id='onmapOnOff'>
                 <legend >На карте:</legend>
                 <!-- Заполняется на основе global settings --> 
@@ -151,8 +183,23 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
 </div>
 
 
-<div id="elevation-chart" ></div>
+<div id="elevation-chart-div" class="ui-widget-content" >
+    <div id="elevation-chart"></div>
+</div>
 
+
+<script>
+  $( function() {
+    $( "#elevation-chart-div" ).draggable();
+    $( "#elevation-chart-div" ).resizable(
+     {
+     resize1 : function(event,ui) { drawPath(); },
+     stop : function(event,ui) { drawPath(); }
+     }
+    );
+    
+  } );
+  </script>
 
 
 <style>
@@ -190,10 +237,11 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCqtLzdiGvGIu85wF1C7w4UKdUncnwgF0M&callback=initMap">
     </script>
     <script async defer src="https://apis.google.com/js/api.js"
-      onload="this.onload=function(){};handleClientLoad()"
+      onload="this.onload=function(){}; handleClientLoad()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
     </script>
 
+<div id="debug" class="hide"><button onclick='$("#debug").addClass("hide");'>Закрыть</button></div>
     
 </body>
 </html>

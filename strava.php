@@ -1,9 +1,18 @@
 <?php
 
+// https://my.apify.com/actors/9rJZagTpspnLsgeX6#/source   получить Policy и $Signature
+
+
 include_once 'gpx.lib';
 
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
+
+/* 2020-04-10
+
+{ "email": "sdsp256@gmail.com" , "password": "652@163Ava" }
+
+*/
 
 
 //header('Content-type: image/jpeg');
@@ -25,7 +34,7 @@ ini_set("display_errors", 1);
 $z = (isset($_GET['z']))?$_GET['z']:'14';
 $x = (isset($_GET['x']))?$_GET['x']:'9901';
 $y = (isset($_GET['y']))? $_GET['y'] :'5132';
-$watermark = (isset($_GET['watermark']))? $_GET['watermark'] :0;
+$watermark = (isset($_GET['watermark']))? $_GET['watermark'] : 0;
 
 
 $img_cache_path = "img_cache/$z/$x/$y.png";
@@ -35,20 +44,20 @@ tm();
 
 
 
-$watermark_img_str = "";
+$watermark_img_str = "*****";
+$file_age  =  time()-filemtime($img_cache_path);
 
-if (file_exists($img_cache_path))
+//print ($file_age);
+
+if (file_exists($img_cache_path) && $file_age < 30*24*3600 )
 {
     $image = new Imagick($img_cache_path);
     echo $image;
 }
 else
 {
-    
     $watermark = 1;
-
     loadFromStrava($z,$x,$y);
-
 }
 
 
@@ -64,12 +73,21 @@ function loadFromStrava($z,$x,$y)
     //описание авторизации https://developers.strava.com/docs/getting-started/#oauth
 
          
-    $img_url = "$strava_url/$z/$x/$y.png?px=256&$Signature&$Key";     
+//  $img_url = "$strava_url/$z/$x/$y.png?px=256&$Signature&$Key";     
     
     $Key_Pair_Id = "APKAIDPUN4QMG7VUQPSA";
-    $Policy = "eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU4MjU2MTc1OX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTgxMzM3NzU5fX19XX0_";
-    $Signature = "acis0ljpNbsWqApUrY5s6eYAl-FUyP0G62j~rpGkSw68NaRZ2-uzFgU-PnPQIMOoJNY0MJxqEQ6T8lEN26GrTtYHcbxJNhKM3KWLJTLBkTfpdmhgXghhrKF1SMfitKHS7DH7Vu8oFxEMOm-TjlX54c8GI2b8TKS5prUTd7sWe-LC3l7Bp~X~pxUtj3VxZuu1rFtYxeFgdYjWoQ8rQqcO0SKDtR94IMSn3QJ0QSMdZsoS-DkmCT2ksFXy5zpFtWLCMx0PJMcqHIHER04O0DoKjyyrqbqwjW2FbPiriABd85fW1p90giYWvWMDWdHETllVGsg3ogq1hQvJ138yy7zowQ__";
+    
+    $ap = apify();
+    
+    echo "ap=".print_r ($ap,1); 
+    
+//    $Policy = "eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU5MzMzMzc5M30sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTkyMTA5NzkzfX19XX0_";
+//    $Signature = "dUglMjwk2FIIOQC1G0zQMO~ZPhh7cbV-dVsdY5X331drD6Eu17AsElSLmo5040feYnNlG49hq9Mqy-o7iGobmMorNxJubxbCtqTeQDO7MOdgGY3gHxoXzt-z4MocjeeVLNUQGlpreVTGDabnFb97ZrF0Kfunk2~LXQKE5cAh1H6uNcBmEZR8xBNV9t9qXJglnbL7Yik9ojMNYUhlfHAMD2vYyhdJDSlNNEEFh0T9bkGx8EJrYsLJ6MEOmPaGd~ArbXQHt3Q2IG6-HAiJRGLU8ty6SYvXubVq8RjeJXZMqpqlRY2aLjAX7rlhWTIPtjgvJnT3Ud09xBtisKJQeSdGqw__";
 
+    $Policy = $ap->Policy;
+    $Signature = $ap->Signature;
+    
+//    $Signature = "My5Cctgax-eZiSPik8BYr~c79H-UXidiuutFfz9BulmYe0tH~wJnUEA0bFzkQN2Rlo91pN~Mn09JZm2XJfz6LhSJl2a8Az6D5qzoG5TrvFYeWUtzmSRm62~iiJTp7qrQi3ePdxzhRSafeju0F3SFMAMmWBcbZBIbVainHwaPuvNtSiy4FUTb1jIkexX6eXzMEoG1RFFw8Zcexqom3ODyZeGR4b3A7qrYsnZmRoS7PuIqnPnxpox4ZV3kAGIgXOYzsp6HPSft8KbpVnuz63ujReCinUToDdzyAWNH4854IAOw~0FGwga4EAjVUUhM2DuXhTjHz0vxq0bhMzjJUtpm~w__";
 
     $img_url  = "$strava_url/$z/$x/$y.png?px=256&Signature=$Signature&Key-Pair-Id=$Key_Pair_Id&Policy=$Policy";
 
@@ -82,49 +100,20 @@ function loadFromStrava($z,$x,$y)
     
     $path_parts = pathinfo($img_cache_path);
 
-
-    //$path_parts_print_r = print_r($path_parts,1); 
     
     if (!is_dir($path_parts['dirname'])) {  // ************ 2020 Create directory *****************
       mkdir($path_parts['dirname'],0777, true);
     }
 
-    
-    //$img_str = "".$z.",".$x.",".$y." | ".str_replace("\t./img_cache","",$size)."" ; //."-----------\n".$du_size;  
-//    $img_str .= $z.",".$x.",".$y."-".str_replace("\t./img_cache", "" , $size);  
-    
-//    $img_str .= tm('02. create dir',1);
 
-// $img_url = "https://heatmap-external-a.strava.com/tiles-auth/all/hot/12/2470/1282.png?px=256&Signature=XdygRZNrhuk88SlE1sYYus5VBPj7yNupsAG~3VAisNktOQ1XTsvFTZcHvfDoBQzFHTwxJdAt3S3DDZGaRVnKYAHP~9si~HFyhW0Cyy22bFwIky~M6SHFhXImIYS2maapKyTDPjkUJ~T5bXzQ5J-9yQAheTlKKRNMlpzo1TkR6Kbr61LBcAbAPiOQ2KR8Xa85-i4b6oDn1GmmvGzvly3OcEL-ceDCOWGiBEDNuN4qs~2dCdOUUouD5rH3raVHDml4nbIs9iR-ya7JDmjC3PfTGAXUKCH19Fj8G9Os9OSgDaPTmAo4Q13a9KQZ0VKad8nxY9ZHrEclxad-nCLL3Neu0Q__&Key-Pair-Id=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6Imh0dHBzOi8vaGVhdG1hcC1leHRlcm5hbC0qLnN0cmF2YS5jb20vKiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU4MTI1NDE5NX0sIkRhdGVHcmVhdGVyVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTgwMDMwMTk1fX19XX0_";   
-
-
-
- $image = new Imagick($img_url);
-
-/*  вариант с загрузко с использованием curl
-
- $file_get_image = curl_get_contents($img_url);
-
- if ($file_get_image !== false)
-   {
-     $image = new imagick();
-//     print("<br />**** file_get_image=".$file_get_image."<br />****************<br />");
-     $image->readImageBlob($file_get_image);
-   }
- else
-   {
-     echo "Uh-oh... Cannot load image from URL!";
-   }
-*/
-    
+    $image = new Imagick($img_url);
 
     // записываем изображение из Strava
     $image->writeImage($img_cache_path); 
     
- 
-    
     $update_res = update_gpx($z,$x,$y); // записываем в базу
-    $watermark_img_str =  $watermark_img_str."{".$watermark."}date: ".tm('res',1)."\n".$update_res;
+//    $watermark_img_str =  $watermark_img_str."{".$watermark."}date: ".tm('res',1)."\n".$update_res;
+    $watermark_img_str =  $watermark_img_str."date: ".tm('res',1)."\n".$update_res;
     
     
     $font = 'Helvetica';
@@ -145,19 +134,19 @@ function loadFromStrava($z,$x,$y)
     //$watermark_outline->setTextAntialias(true);  //try with and without
     // Set the text for both, and offset one to match stroke width
     $watermark_outline->annotation(0, 0, $watermark_img_str);
-    $watermark_text->annotation(0, 0, $watermark_img_str);
+    $watermark_text->annotation(0, 0, $watermark_img_str."****");
     // Draw stroke, then text
     
-    
     global $watermark;
-    if ($watermark)  // не используется в .get
+    
+    if ($watermark || 1)  // не используется в .get
     {
         $image->drawImage($watermark_outline);
         $image->drawImage($watermark_text);
     }
 
 
-    echo $image;
+//    echo $image;
 
 }
 

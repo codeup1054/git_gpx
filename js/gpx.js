@@ -5,11 +5,14 @@
 var map;
 var homeGeo = ["55.6442983","37.4959946"] // base
 var cache_area = {};
-var globalSettings = {
+
+var globalSettings = { // 2020-02-25 добавить обновление из cookies
                distOnOff:{on:true,  name:'Дистанция', exec:["updateMarkersOnMap"]},
+               markerLableOnOff:{on:true,  name:'Метка точки', exec:["updateMarkersOnMap"]},
                cacheOnOff:{on:false, name:'Cache', exec:["cacheOnOff"]},
                latlngOnOff:{on:true,name:'LatLng', exec:["updateMarkersOnMap"]},
-               pathOnOff:{on:true,  name:'Путь', exec:["updateMarkersOnMap"]}
+               pathOnOff:{on:true,  name:'Путь', exec:["updateMarkersOnMap"]},
+               overlay:{ options:["нет","микро","средние"],  name:'Покрытие', exec:["updateOverlay"]}
                };
 
 var context;  
@@ -20,23 +23,31 @@ var chart;
 //var infowindow = new google.maps.InfoWindow();
 var polyline;
 // Load the Visualization API and the columnchart package.
-
 var isKeyControll = false;
 
+
+//$( "#elevation-chart-div" ).resize( function(){ console.log("@@@ resize"); } );
 
 $(document).ready(function()
 {   
 
-document.onkeydown = function(e) {
-  isKeyControll = ((e.ctrlKey == true));
-}
-
-document.onkeyup = function(e) {
-  isKeyControll = false;
-}
+document.onkeydown = function(e) {  isKeyControll = ((e.ctrlKey == true)); }
+document.onkeyup = function(e)   {   isKeyControll = false; }
 
 
-  // 2019-08-20 изменяемые панели.
+// 2020-06-29  events   
+
+$('input[set_id]').on('change',function (event, target) {
+  console.log("@@ select_all_checkboxes",event, target);
+});
+
+
+
+
+// 2019-08-20 изменяемые панели.
+
+$( "#debug" ).resizable();
+$( "#debug" ).draggable();
 
 var resize= $("#left_panel");
 var right_p = $("#right_panel")  
@@ -44,7 +55,7 @@ var containerWidth = $("#container").width();
 
 
     show_cache_legend();
-    console.log( "@@ ready!" );
+//    console.log( "@@ ready!" );
     
 $('#buttons_panel').html("***");    
 
@@ -53,10 +64,22 @@ $(Object.keys(globalSettings)).each(function(k,v)
             el = globalSettings[v];    
 //            console.log("@@ gl",v,el,el.on,el.name, $('#right_panel'));
             chk = (el.on)?"checked":"";
-                
-            $('#onmapOnOff').append(`<input type=checkbox  ${chk}
-            id= ${v} onchange='globalSettings.${v}.on=this.checked; gpxexec(["${el.exec}"]);'/>
-            <label for='on_of_distance'>${el.name}</label>` );
+            
+            if (typeof el.on !== 'undefined')
+                {    
+                $('#onmapOnOff').append(`<input type=checkbox  ${chk}
+                id= ${v} onchange='globalSettings.${v}.on=this.checked; gpxexec(["${el.exec}"]);'/>
+                <label for='on_of_distance'>${el.name}</label> | ` );
+                }
+            else 
+                {   
+                    sel = el.options.map(function(e){ return "<option>"+e+"</option>"; });
+                    
+                    $('#onmapOnOff').append(`${el.name} <select 
+                    id= ${v} onchange='globalSettings.${v}.on=this.checked; gpxexec(["${el.exec}"]);'>
+                    ${sel}</select>` );
+                }    
+            
             });
 
       
@@ -161,7 +184,7 @@ var dinfo = p[4] || 0;
 
 //var zoom = hashGeo[2].substr(0, hashGeo[2].length - 1);
 
-console.log ("@@ hashGeo", $.cookie('hash'), p, homeGeo, zoom, document.location );
+//console.log ("@@ hashGeo", $.cookie('hash'), p, homeGeo, zoom, document.location );
 
 
 var tile_cnt = 0 ;
@@ -283,28 +306,34 @@ class _markers {
                     {
 //                    text_lines = text_lines.concat([dist]);
                     var dist_info = this.path_total_dist.toFixed(1)+'+'+dist.toFixed(1) + '|' + elev;
-                    m_text = m_text + '<rect x="19" y="'+(l*9)+'" width="'+dist_info.length*5.2+'" height="11" fill-opacity="0.80" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />';
+                    m_text = m_text + '<rect x="0" y="'+(l*9)+'" width="'+dist_info.length*5.2+'" height="11" fill-opacity="0.80" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />';
                     l++;
-                    m_text = m_text + '<text x="20" y="'+(l*9)+'" font-family="Arial, sans-serif" fill="%23bb3311" stroke="none" \
+                    m_text = m_text + '<text x="0" y="'+(l*9)+'" font-family="Arial, sans-serif" fill="%23bb3311" stroke="none" \
                             paint-order="stroke" text-anchor="left" font-size="11"  >'+dist_info+'</text>';
                     }          
                     
                     
-
-
-                    
-                    
 //                    console.log("@@ text=", text_lines);
                     
-                    var url = m.url || 'data:image/svg+xml;utf-8, \
-                    <svg width="132" height="52" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
-                    <circle fill="'+prop.fill+'" stroke="white" stroke-width="1"  cx="14" cy="14" r="5"/> \
-                    <rect x="16" y="0" width="82" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />'
-                    +m_text+
-                    '</svg>';
+                    if (globalSettings.markerLableOnOff.on )
+                    {
+                        var url = m.url || 'data:image/svg+xml;utf-8, \
+                        <svg width="132" height="52" viewBox1="0 0 15 32" xmlns="http://www.w3.org/2000/svg"> \
+                        <circle fill="'+prop.fill+'" stroke="white" stroke-width="1"  cx="5" cy="5" r="5"/> \
+                        <rect x="10" y="0" width="82" height="11" fill-opacity="0.40" rx="2" ry="2" fill="rgb(255,255,255)" stroke="none" />'
+                        +m_text+
+                        '</svg>';
+                     }
+                     else
+                     {
+                        var url = m.url || 'data:image/svg+xml;utf-8, \
+                        <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg"> \
+                        <circle fill="'+prop.fill+'" stroke="white" stroke-width="1"  cx="5" cy="5" r="5"/> \
+                        </svg>';
+                     }   
                     
                     var icon = {
-                        anchor: new google.maps.Point(14, 14),
+                        anchor: new google.maps.Point(5, 5),
                         size1: new google.maps.Size(60,30.26),
                         url: url
         }
@@ -342,7 +371,7 @@ class _markers {
                   var left = mouseEvt.clientX;
                   var top = mouseEvt.clientY;
             
-                  console.log("@@ rightClick",$(this)[0].m.gpx_id,$(this),context);
+                  console.log("@@ rightClick",$(this)[0].m.set_id,$(this),context);
 
                   var rowId = $(this)[0].m.gpx_id;
 
@@ -376,17 +405,21 @@ class _markers {
                   
                   markerRemove.on('click', function()
                       {
-                      [setName,pointName,pos] = rowId.split("|");
 
-                      console.log("hideShow.on('remove'", glob_gpx[setName].points[pos]);  
+                      console.log("@@ markerRemove", m);  
 
-//                      glob_gpx[setName].points.splice(pos,1);
+                      [setName,pointName,pos,set_id,gpx_id] = m.gpx_id.split('|');
+                      
+                      console.log("hideShow.on('remove'", [setName,pointName,pos,set_id,gpx_id] 
+                                                        ,glob_gpx[set_id].points[pos] );  
+
+                      glob_gpx[set_id].points.splice(pos,1);
                       
                       $("table[dataset='"+setName+"'] tr[gpx_id ='"+rowId+"']").remove();
                       
 //                      gpxPointsToTable(glob_gpx[setName],setName);
                       
-                      updatePointOrderInGlobalGpx(setName);
+//                      updatePointOrderInGlobalGpx(set_id, pos);
                       
                       updateMarkersOnMap();
                       
@@ -665,27 +698,29 @@ function callDrag(marker,drag_end=0) {
 //          updateMarkerIcon(marker);   // одиночный маркер
 //          drawPath();
 //          markersArray.addMarkers();  // все маркеры
-//          updateTotalDist(marker);
+          updateTotalDist(marker);
         }
   };
 }
 
-
+var gpx_id_to_save = [];
 
 function updateLatLngInGlobalGpx(m,lat,lng)
 {           
-    console.log("@@ updateLatLngInGlobalGpx m=", m.m.gpx_id, m);
+//    console.log("@@ updateLatLngInGlobalGpx m=", m.m.gpx_id, m);
     
-    [setName,pointName,pos] = m.m.gpx_id.split('|');
+    [setName,pointName,pos,set_id,gpx_id] = m.m.gpx_id.split('|');
+    
+    gpx_id_to_save.push({ gpx_id:gpx_id,lat:lat,lng:lng });
 
     console.log("@@ updateLatLngInGlobalGpx= n", pos, lat,lng, glob_gpx);
 
 //    id = glob_gpx.findIndex(x => x.name === n[0]);
 
-    glob_gpx[setName].points[pos].lat = lat;
-    glob_gpx[setName].points[pos].lng = lng;
+    glob_gpx[set_id].points[pos].lat = lat;
+    glob_gpx[set_id].points[pos].lng = lng;
 
-    console.log("@@ updateLatLngInGlobalGpx= n", pos, lat,lng, glob_gpx);
+    console.log("@@ 09. updateLatLngInGlobalGpx= n", pos, lat,lng, glob_gpx, gpx_id_to_save);
 }
 
 // 2020.02.10 imporved version updateLatLngInGlobalGpx
@@ -695,7 +730,7 @@ function updateLatLngInGlobalGpx(m,lat,lng)
 function updateGpx(gpx_id, d=0 )
 {           
    
-    [setName,pointName,pos] = gpx_id.split('|');
+    [setName,pointName,pos,set_id] = gpx_id.split('|');
 
 //    id = glob_gpx.findIndex(x => x.name === n[0]);
 /*
@@ -709,23 +744,23 @@ dist: "13.22"
 color: "#ffdd88"
 */
 
-    glob_gpx[setName].points[pos].lat = lat;
-    glob_gpx[setName].points[pos].lng = lng;
-    glob_gpx[setName].points[pos].name = d.name || glob_gpx[setName].points[pos].name;
-    glob_gpx[setName].points[pos].description = d.description || glob_gpx[setName].points[pos].description;
+    glob_gpx[set_id].points[pos].lat = lat;
+    glob_gpx[set_id].points[pos].lng = lng;
+    glob_gpx[set_id].points[pos].name = d.name || glob_gpx[setName].points[pos].name;
+    glob_gpx[set_id].points[pos].description = d.description || glob_gpx[set_id].points[pos].description;
 
     console.log("@@ 07.updateLatLngInGlobalGpx=", d, d.name, pos, lat,lng, glob_gpx);
 
 }
 
 
-function updatePointOrderInGlobalGpx(setName)
+function updatePointOrderInGlobalGpx(set_id,pos)
 {           
-    console.log("@@ updatePointOrderInGlobalGpx m=", setName, glob_gpx);
-    gpx_set_trs = $("tr[gpx_id*='"+setName+"']");
+    console.log("@@ updatePointOrderInGlobalGpx m=", set_id,pos);
+    gpx_set_trs = $("tr[gpx_id*='"+set_id+"']");
         
     points = [];
-    glbp = glob_gpx[setName].points;
+    glbp = glob_gpx[set_id].points[pos];
         
     $.each(gpx_set_trs, function (k,v)
     {   
@@ -775,9 +810,28 @@ console.log("@@ updatePointOrderInGlobalGpx= n", glob_gpx[setName].points, glbp,
 
 function updateTotalDist(mname)
 {
-//    console.log("@@ updateTotalDist=",mname);
+    [setName,pointName,pos,set_id] = mname.m.gpx_id.split('|');
+    
+    console.log("@@ updateTotalDist=", setName, pointName, pos,set_id, glob_gpx);
+    
+    var dist_total = 0;
+    var o ={};
+        
+    $.each(glob_gpx[set_id].points, function(k,v){
+        
+        if (k == 0) [o.lat, o.lng] = [v.lat, v.lng];
+        
+        dist = getDistanceFromLatLonInKm( o.lat, o.lng, v.lat, v.lng);
+        dist_total += dist ;
+        
+        [o.lat, o.lng] = [v.lat, v.lng];
+        
+        console.log("@@ 10 updateTotalDist=", dist_total, dist ); 
+    });
+
 //    show(mname.idx);
 //    dist = ((r>0) ? ""+dist_total.toFixed(2)+"<sup>+"+dist_next+"</sup>":"");
+
 }
 
 
@@ -846,7 +900,7 @@ function markerDel(ob){
 MERCATOR={
   
   fromLatLngToPoint:function(latLng){
-     var siny =  Math.min(Math.max(Math.sin(latLng.lat* (Math.PI / 180)), 
+     var siny =  Math.min(Math.max(Math.sin(latLng.lat * (Math.PI / 180)), 
                                    -.9999),
                           .9999);
      return {
@@ -933,18 +987,20 @@ var mapOptions = {
        if (!isKeyControll) return; 
         
 //       addMarker(map, {title:"Новая точка"}, e.latLng)
+        
+       console.log("@@ addListener", context); 
 
               
-       setName = context.activePointId.split("|")[0];
+       set_id = context.activePointId.split("|")[3];
        
-       console.log("@@ click addPoint",setName, e.latLng.lat());
+       console.log("@@ click addPoint",set_id, e.latLng.lat());
        
-       i = {name:"Новая точка "+ glob_gpx[setName].points.length,
+       i = {name:"Новая точка "+ glob_gpx[set_id].points.length,
                 description:"Описание",
                 lat:e.latLng.lat().toFixed(5) || "55.4",
                 lng:e.latLng.lng().toFixed(5) || "37.45"}
        
-       addPoint(setName,i);
+       addPoint(set_id,i);
 
         
 //        int_latlng = {lat:e.latLng.lat(),lng:e.latLng.lng()};
@@ -1246,13 +1302,18 @@ function fitMarkers()
 
 function drawPath() {
     
+    
+    
     if (polyline) polyline.setMap(null);
 
-//    console.log ("@@ drawPath path_points", globalSettings.pathOnOff.on, polyline);
     
     if ( !globalSettings.pathOnOff.on) return;
     
     chkd = $("[gpx_id] input:checked");
+
+
+//    console.log ("@@ drawPath path_points", chkd );
+
     
     path_points = chkd.map(function(i,e) {
 
@@ -1276,7 +1337,7 @@ function drawPath() {
     // Create a PathElevationRequest object using this array.
     // Ask for 256 samples along that path.
 
-    samp = Math.floor(($(window).width()-500)/4)
+    samp = Math.floor(($(window).width()-500)/7)
     
 //    console.log("@@@ samp ", samp)
     
@@ -1323,7 +1384,7 @@ function plotElevation(results, status) {
 
          color = heatMapColorforValue((elevations[i].elevation - elev_min)/(elev_max - elev_min));
          
-         console.log("@@ elevationPath.slice", i, elev_max, elev_min, color, elevations[i-2]);
+//         console.log("@@ elevationPath.slice", i, elev_max, elev_min, color, elevations[i-2]);
          
          
          var pathOptions = {
@@ -1374,18 +1435,18 @@ function plotElevation(results, status) {
     document.getElementById('elevation-chart').style.display = 'block';
 
     options = {
-              width: $(window).width()+50,
-              height: 150,
-              legend: 'none',
+              width: $("#elevation-chart-div").width()-30,
+              height: $("#elevation-chart-div").height()-30,
+              legend: 'Профиль',
               hAxis: { 
                 maxValue: 7,
-                title: "WP",
+                title: "Профиль",
                 gridlines: { count: 3, color: '#CCC' }, 
                 },
               vAxis: { maxValue: 13 },
               titleY: 'Высота (m)',
-              lineWidth: 30,
-              pointSize: 2,
+              lineWidth: 2,
+              pointSize: 1,
               pointShape: 'none',
               colors: ['#d3368d', '#e2431e', '#e7711b',
                        '#e49307', '#e49307', '#b9c246']
@@ -1398,7 +1459,7 @@ function plotElevation(results, status) {
       height: 150,
 //      color: '#ccddff',
       legend: 'none',
-      titleY: 'Elevation (m)'
+      titleY1: '1Elevation (m)'
     };
     
     chart.draw(data, options);
@@ -1524,11 +1585,12 @@ function chartOver()
 
 function resizeChart () {
     console.log("@@@ resize", $('elevation-chart').length);
-    if ($('elevation-chart').length)
+    if ($('elevation-chart-div').length)
     drawPath();
 }
 
 if (document.addEventListener) {
+    console.log("@@ resize");
     window.addEventListener('resize', resizeChart);
 }
 else if (document.attachEvent) {
@@ -1608,7 +1670,7 @@ CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
       div.className = 'heatmapdiv';
       div.style.fontSize = '10';
       div.style.borderStyle = 'solid';
-      div.style.borderWidth = '1px';
+      div.style.borderWidth = dinfo+'px';
       div.style.borderColor = '#AAAAAA';
       div.style.opacity =hmOpacity;
 
@@ -1723,7 +1785,7 @@ function ifMapChanged()
 
 
 // 2020-01-17 get stat by group 
-console.log("@@ init gps.js");
+//console.log("@@ init gps.js");
 
 function getCacheStat(i)
     {
@@ -1811,24 +1873,43 @@ function UrlExists(url)
 // Секция для обработки кнопок тулбара
 
 function cacheOnOff()
-{
-    if (globalSettings.cacheOnOff.on) checkCacheMultyZoomBySQL(map.getCenter(),map.getZoom()-3,6);
+{   
+    var bounds = map.getBounds();
+    var ne = bounds.getNorthEast();
+    var sw = bounds.getSouthWest();
+    
+    N = map.getBounds().getNorthEast().lat();   
+    E = map.getBounds().getNorthEast().lng();
+    S = map.getBounds().getSouthWest().lat();   
+    W = map.getBounds().getSouthWest().lng();  
+    
+    N1 = new google.maps.LatLng(N,(W+E)/2);
+    N2 = new google.maps.LatLng(S,(W+E)/2);
+    
+    console.log("@@ map.getBounds()",ne , sw, N1, N2,"\n");
+    
+    if (globalSettings.cacheOnOff.on)
+        {
+        checkCacheMultyZoomBySQL( N1 , map.getZoom()-2,6);
+        checkCacheMultyZoomBySQL( N2 , map.getZoom()-2,6);
+        } 
     else clear_cache();
 }
 
 
 function checkCacheMultyZoomBySQL (latlng, zoom, z_depth)
 {
-        coord = MERCATOR.getTileAtLatLng(latlng, zoom);
-        
+//        coord = MERCATOR.getTileAtLatLng(latlng, zoom);
+       
         var request_data = 
+
         { get_cache_list: 1, 
             z_depth: z_depth,
             z: zoom,
 //            x: coord.x,
 //            y: coord.y,
-            lat: latlng.lat,
-            lng: latlng.lng
+            lat: latlng.lat(),
+            lng: latlng.lng()
            };
 
 // console.log ("@@ request_data",latlng,request_data );
@@ -1892,13 +1973,11 @@ function heatMapColorforValue(value){
 function show_cache_legend()
 {   
     dv = "";
-    
     for (i=0;i<=16;i++)
     {
         dv = dv+"<div style='background-color:"+heatMapColorforValue(i/16)+"'>"+i+"</div>";
     }
-    
-    
+
     $('.buttons_panel').append("<br /><br /><div class=legend>"+dv+"</div>");
 };
 
