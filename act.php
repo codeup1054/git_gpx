@@ -4,9 +4,20 @@ include_once "gpx.lib";
 
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
-//print_r ($_REQUEST);
+///print_r ($_REQUEST);
 
 $data =  json_decode("{data:'test'}");
+
+
+if (isset ($_REQUEST["new_gpx_set"]))
+    {
+    $data =  $_REQUEST["new_gpx_set"];
+    header('Content-Type: application/json');
+    print $gsql->addGpxSetDB($data); 
+    }
+
+
+
 if (isset ($_REQUEST["save_json"]))
     {
     $data =  $_REQUEST["save_json"];
@@ -18,7 +29,6 @@ if (isset ($_REQUEST["save_json"]))
         fclose($fh);
         print ( "\n<br />filesize=".filesize ($myFile));
     }
-
 
      
 if (isset ($_REQUEST["save_db"]))

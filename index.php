@@ -137,17 +137,18 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
 ?>
  
 
-
-
-
-
 <div id="container">
            <input type='checkbox'/>
     <div id="left_panel">
+           <div>
+           <input id='newgpx' value="Новый набор"/> 
+                <button class="ui-button ui-widget ui-corner-all small" onclick="makeApiCall('newGpxSet')">Новый набор</button>
+           </div> 
            <div id="datasetpanel">
                <div class="datasetcheckbox"></div>
            </div>
-           <div class="datasets" ></div>
+           <strong>Наборы точек</strong><br />
+           <div id="datasets" ></div>
            <div id="current"></div>
            <div id="result"></div>
     </div>

@@ -18,6 +18,7 @@ var globalSettings = { // 2020-02-25 добавить обновление из 
 var context;  
  context = {activePointId:""}; // текущий контекст строка набора
 
+
 var elevator;
 var chart;
 //var infowindow = new google.maps.InfoWindow();
@@ -31,35 +32,35 @@ var isKeyControll = false;
 $(document).ready(function()
 {   
 
-document.onkeydown = function(e) {  isKeyControll = ((e.ctrlKey == true)); }
-document.onkeyup = function(e)   {   isKeyControll = false; }
-
-
-// 2020-06-29  events   
-
-$('input[set_id]').on('change',function (event, target) {
-  console.log("@@ select_all_checkboxes",event, target);
-});
-
-
-
-
-// 2019-08-20 изменяемые панели.
-
-$( "#debug" ).resizable();
-$( "#debug" ).draggable();
-
-var resize= $("#left_panel");
-var right_p = $("#right_panel")  
-var containerWidth = $("#container").width();  
-
-
-    show_cache_legend();
-//    console.log( "@@ ready!" );
+    document.onkeydown = function(e) {  isKeyControll = ((e.ctrlKey == true)); }
+    document.onkeyup = function(e)   {   isKeyControll = false; }
     
-$('#buttons_panel').html("***");    
-
-$(Object.keys(globalSettings)).each(function(k,v)
+    
+    // 2020-06-29  events   
+    
+    $('input[set_id]').on('change',function (event, target) {
+      console.log("@@ select_all_checkboxes",event, target);
+    });
+    
+    
+    
+    
+    // 2019-08-20 изменяемые панели.
+    
+    $( "#debug" ).resizable();
+    $( "#debug" ).draggable();
+    
+    var resize= $("#left_panel");
+    var right_p = $("#right_panel")  
+    var containerWidth = $("#container").width();  
+    
+    
+        show_cache_legend();
+    //    console.log( "@@ ready!" );
+        
+    $('#buttons_panel').html("***");    
+    
+    $(Object.keys(globalSettings)).each(function(k,v)
             { 
             el = globalSettings[v];    
 //            console.log("@@ gl",v,el,el.on,el.name, $('#right_panel'));

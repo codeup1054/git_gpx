@@ -59,7 +59,11 @@ br1, .color, .lat, .lng, .time, .color, .idx
     padding:2px;
     }
 
-.tab {border-collapse:collapse;}
+.tab{ border-collapse:collapse;
+      background-color:#fff;
+      width:100%;  
+
+    }
 
 #gps_xml {font-size: 9px; width:400px; height: 100px;}
 
