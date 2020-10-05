@@ -13,7 +13,9 @@ if (isset ($_REQUEST["new_gpx_set"]))
     {
     $data =  $_REQUEST["new_gpx_set"];
     header('Content-Type: application/json');
+    
     print $gsql->addGpxSetDB($data); 
+    
     }
 
 

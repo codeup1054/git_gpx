@@ -2,6 +2,11 @@
 2020*
 bu/*
 img_cache/*
+autoauth/*
+data/*
+gpx-*
+syn/*
+test*
 js/cookie/*
 dev/*
 .gitignore

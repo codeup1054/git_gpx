@@ -1,22 +1,23 @@
 //document.write('<script type="text/javascript" src="js/cookie/jquery.cookie.js"></script>');
 //2019-11-15 global var init
 
-
 var map;
 var homeGeo = ["55.6442983","37.4959946"] // base
 var cache_area = {};
 
 var globalSettings = { // 2020-02-25 добавить обновление из cookies
                distOnOff:{on:true,  name:'Дистанция', exec:["updateMarkersOnMap"]},
-               markerLableOnOff:{on:true,  name:'Метка точки', exec:["updateMarkersOnMap"]},
+               markerLableOnOff:{on:false,  name:'Метка точки', exec:["updateMarkersOnMap"]},
                cacheOnOff:{on:false, name:'Cache', exec:["cacheOnOff"]},
                latlngOnOff:{on:true,name:'LatLng', exec:["updateMarkersOnMap"]},
                pathOnOff:{on:true,  name:'Путь', exec:["updateMarkersOnMap"]},
+               elevOnOff:{on:true,  name:'Высоты', exec:["updateMarkersOnMap"]},
                overlay:{ options:["нет","микро","средние"],  name:'Покрытие', exec:["updateOverlay"]}
                };
 
 var context;  
- context = {activePointId:""}; // текущий контекст строка набора
+ context = {activePointId:"",
+            set_id:0}; // текущий контекст строка набора
 
 
 var elevator;
@@ -424,7 +425,7 @@ class _markers {
                       
                       updateMarkersOnMap();
                       
-//                      updateMarkersOnMap();
+
 
                       $("[marker_menu_id='"+rowId+"'").remove(); 
 
@@ -683,7 +684,7 @@ function callDrag(marker,drag_end=0) {
     lng  = marker.position.lng().toFixed(5)//.toFixed(4);
     dist = getDistanceFromLatLonInKm(lat,lng);
 
-//    console.log("@@ Callback", lat,lng, marker);
+//    console.log("@@ callDrag", lat,lng, marker);
     
     markersArray.updateMarkerRow(marker);
 
@@ -692,14 +693,17 @@ function callDrag(marker,drag_end=0) {
     if (drag_end)  
         { 
          // map.panTo(marker.position);
-//          console.log("@@ updateTotalDist=", marker);
+          console.log("@@ drag_end=", marker);
+          gpxPointsToTable(glob_gpx[set_id],set_id,"checked");  
           updateLatLngInGlobalGpx(marker,lat,lng);
           updateGeoInTable(marker,lat,lng);
-          updateMarkersOnMap();         // все маркеры
+//          updateMarkersOnMap();         // все маркеры
 //          updateMarkerIcon(marker);   // одиночный маркер
 //          drawPath();
 //          markersArray.addMarkers();  // все маркеры
-          updateTotalDist(marker);
+//          updateTotalDist(marker);
+          gpxexec(["updateMarkersOnMap"]);
+          
         }
   };
 }
@@ -708,13 +712,12 @@ var gpx_id_to_save = [];
 
 function updateLatLngInGlobalGpx(m,lat,lng)
 {           
-//    console.log("@@ updateLatLngInGlobalGpx m=", m.m.gpx_id, m);
     
     [setName,pointName,pos,set_id,gpx_id] = m.m.gpx_id.split('|');
     
     gpx_id_to_save.push({ gpx_id:gpx_id,lat:lat,lng:lng });
 
-    console.log("@@ updateLatLngInGlobalGpx= n", pos, lat,lng, glob_gpx);
+    console.log("@@ updateLatLngInGlobalGpx (): \n" , pos, lat,lng, m);
 
 //    id = glob_gpx.findIndex(x => x.name === n[0]);
 
@@ -750,15 +753,28 @@ color: "#ffdd88"
     glob_gpx[set_id].points[pos].name = d.name || glob_gpx[setName].points[pos].name;
     glob_gpx[set_id].points[pos].description = d.description || glob_gpx[set_id].points[pos].description;
 
-    console.log("@@ 07.updateLatLngInGlobalGpx=", d, d.name, pos, lat,lng, glob_gpx);
+//    console.log("@@ 07.updateLatLngInGlobalGpx=", d, d.name, pos, lat,lng, glob_gpx);
 
 }
 
 
+// 2020-10-05 
+
+function updateSetInfo(set_id, set_info)
+{
+    
+    glob_gpx[set_id].set_name = set_info.name;
+    
+    console.log("@@ updateSetInfo", set_id, set_info, glob_gpx[set_id].set_name);
+}
+
 function updatePointOrderInGlobalGpx(set_id,pos)
 {           
-    console.log("@@ updatePointOrderInGlobalGpx m=", set_id,pos);
-    gpx_set_trs = $("tr[gpx_id*='"+set_id+"']");
+    
+    
+    gpx_set_trs = $("[set_id='"+set_id+"'] .points tr:not(:first-child)");
+
+    console.log("@@_04 updatePointOrderInGlobalGpx m=", set_id, pos, gpx_set_trs);
         
     points = [];
     glbp = glob_gpx[set_id].points[pos];
@@ -767,7 +783,8 @@ function updatePointOrderInGlobalGpx(set_id,pos)
     {   
         tds = $($(v).children('td')[0]).text();
         inp_idx = $($(v).children('input')[0]).text();
-        console.log("@@@ updatePointOrderInGlobalGpx k=%s tds=%s \n glbp[k]=%o \n glbp[tds]=%o \n v=%o \n", k, tds, glbp[k], glbp[tds], v);
+        console.log("@@@ updatePointOrderInGlobalGpx \n k=%s \n tds=%s \n glbp[k]=%o \n\
+         glbp[tds]=%o \n v=%o \n", k, tds, glbp[k], glbp[tds], v);
         points.push( glbp[tds] );
         
         $($(v).children('td')[0]).text(k);
@@ -778,33 +795,15 @@ function updatePointOrderInGlobalGpx(set_id,pos)
         $(v).attr({gpx_id:rowId});
         
         console.log("@@ input=", $($(v).find('input')[0]));
-        
-/*        p = {
-        ID: k
-        Status: ""
-        name: []
-        description: "Москва, Юго-западная"
-        lat: "55.6624"
-        lng: "37.4838"
-        dist: "1.57"
-        color: "#ff8866"
-        time: ""
-        'Название станции': "Юго-западная"
-        }
-*/
-
     }); 
 
-    glob_gpx[setName].points = points;
+    glob_gpx[set_id].points = points;
     
 //    gpxPointsToTable(glob_gpx[setName],setName);
 
 console.log("@@ updatePointOrderInGlobalGpx= n", glob_gpx[setName].points, glbp, points);
 
 //    id = glob_gpx.findIndex(x => x.name === n[0]);
-
-//    glob_gpx[setName].points[pos].lat = lat;
-//    glob_gpx[setName].points[pos].lng = lng;
 
 }
 
@@ -827,7 +826,6 @@ function updateTotalDist(mname)
         
         [o.lat, o.lng] = [v.lat, v.lng];
         
-        console.log("@@ 10 updateTotalDist=", dist_total, dist ); 
     });
 
 //    show(mname.idx);
@@ -959,6 +957,7 @@ function initMap() {
 var mapOptions = {
     zoom: zoom,
 //    mapTypeId: 'satellite',
+    
     center: new google.maps.LatLng(homeGeo[0],homeGeo[1])
   };
 
@@ -1001,6 +1000,8 @@ var mapOptions = {
                 lat:e.latLng.lat().toFixed(5) || "55.4",
                 lng:e.latLng.lng().toFixed(5) || "37.45"}
        
+       
+                            
        addPoint(set_id,i);
 
         
@@ -1303,63 +1304,115 @@ function fitMarkers()
 
 function drawPath() {
     
-    
-    
-    if (polyline) polyline.setMap(null);
 
+
+    while(polylines.length) { polylines.pop().setMap(null); }
+    if (polyline) { polyline.setMap(null); }  
     
     if ( !globalSettings.pathOnOff.on) return;
+
     
     chkd = $("[gpx_id] input:checked");
 
-
-//    console.log ("@@ drawPath path_points", chkd );
-
+    var pathOptions = {
+    //          path: path_points,
+    strokeWeight: 4,
+    strokeColor: 'orange' ,
+    strokeOpacity: 0.2,
+    map: map
+    }
+   
+   var globalZIndex = 100;
+   
+   olatLng  = 0;
     
-    path_points = chkd.map(function(i,e) {
-
+   path_points = chkd.map(function(i,e) {
+    
          v = e.closest('tr');
          name = $(v).find("td:eq(2)").text();
          lat = $(v).find("td:eq(4)").text(); // переделать на global_gpx
          lng = $(v).find("td:eq(5)").text();   
          
-//       console.log("@@@ lat,lng  ",name, lat,lng);
+    //       console.log("@@@ lat,lng  ",name, lat,lng);
          
          var latLng = new google.maps.LatLng(lat,lng);
+    
+         if ( olatLng )
+             {
+                 pathOptions.path = [latLng, olatLng];
+                 polyline = new google.maps.Polyline(pathOptions);
+                 
+                 polyline.k= i;
+                 
+                 polyline.setOptions({ zIndex: globalZIndex++ });
+                 
+                 google.maps.event.addListener(polyline , 'click', function (e,o) { polylineClick( e, $(this) );});
+                 polylines.push(polyline);
+             }
+    
+         olatLng  = latLng;
+    
+    
          return latLng ;
       }).get();
-    
-// Create a new chart in the elevation_chart DIV.
-// chart = new google.visualization.ColumnChart(document.getElementById('elevation-chart'));
-    chart = new google.visualization.AreaChart(document.getElementById('elevation-chart'));
 
-    var path = path_points.slice(1);
-    
-    // Create a PathElevationRequest object using this array.
-    // Ask for 256 samples along that path.
-
+if ( !globalSettings.elevOnOff.on) return;   
+   
     samp = Math.floor(($(window).width()-500)/7)
-    
-//    console.log("@@@ samp ", samp)
-    
+
+   
     var pathRequest = {
         'path': path_points,
-        'samples': samp
+        'samples': 200
     }
-    // Initiate the path request.
-    elevator.getElevationAlongPath(pathRequest, plotElevation);
-    
+
+
+   chart = new google.visualization.AreaChart(document.getElementById('elevation-chart'));
+   elevator.getElevationAlongPath(pathRequest, plotElevation);
+
 }
+
+
+
+function polylineClick(e,o)
+    {
+    //        pathstart = e.getPath().getArray()[0];
+                
+        
+    //        addMarker(map, {title:"Новая точка"}, pathstart)
+    
+        console.log ("@@ polylineClick ", set_id, i ,e, o);
+    
+       
+       seg_idx = o[0].k;
+       
+       i = {name:"Новая точка "+ glob_gpx[set_id].points.length,
+                description:"Описание",
+                lat: e.latLng.lat().toFixed(5) || "55.4",
+                lng: e.latLng.lng().toFixed(5) || "37.45",
+                set_id:set_id,
+                seg_idx:seg_idx
+                
+                }
+    
+        set_id = context.activePointId.split("|")[3];
+         
+        addPoint(set_id, i);        
+                                                
+            
+    }    
 
 
 var el_markers = [];
 var polylines = [];
 
+
+
 function plotElevation(results, status) {
+
+    var elev_max = -11000;
+    var elev_min = 9000;
   
-  while(polylines.length) { polylines.pop().setMap(null); }
-  
-  if (polyline) { polyline.setMap(null); }  
     
   if (status == google.maps.ElevationStatus.OK) {
     elevations = results;
@@ -1368,8 +1421,6 @@ function plotElevation(results, status) {
     // and store them in an array of LatLngs.
     var elevationPath = [];
     
-    var elev_max = -11000;
-    var elev_min = 9000;
 
     for (var i = 0; i < results.length; i++) {
         elev_max = Math.max(elevations[i].elevation,elev_max);
@@ -1383,13 +1434,13 @@ function plotElevation(results, status) {
          if( i > 1 )
          {
 
-         color = heatMapColorforValue((elevations[i].elevation - elev_min)/(elev_max - elev_min));
+         color = heatMapColorforValue(((elevations[i].elevation + elevations[i-1].elevation)/2 - elev_min)/(elev_max - elev_min));
          
 //         console.log("@@ elevationPath.slice", i, elev_max, elev_min, color, elevations[i-2]);
          
          
          var pathOptions = {
-          path: elevationPath.slice(i-2,i),
+          path: elevationPath.slice(i-1,i+1),
           strokeWeight: 4,
 //          strokeColor: (i%2)?'#2255cc':'#ff4422' ,
           strokeColor: color ,
@@ -1398,6 +1449,14 @@ function plotElevation(results, status) {
          } 
          polyline = new google.maps.Polyline(pathOptions);
          
+         
+/*         polyline.data = { marker_idx: Math.floor(i/(($(window).width()-500)/7)), 
+                           i: i,
+                           seg: (($(window).width()-500)/7)                                    
+                         } ;  // 200-08-07 ищем предидущую точку с учетом разбиения на samp          
+*/         
+//         google.maps.event.addListener(polyline , 'click', function (e) { return true;});
+                                    
          polylines.push(polyline);
             
         }
@@ -1408,6 +1467,7 @@ function plotElevation(results, status) {
     
 
     }
+
 
     // Display a polyline of the elevation path.
     var pathOptions = {
@@ -1625,11 +1685,12 @@ var fixHelperModified = function(e, tr) {
     return $helper;
 },
  updateIndex = function(e, ui) {
-        console.log("@@@ updateIndex",e, ui);
 
-        [setName,pointName,pos] = $(ui.item[0]).attr('gpx_id').split('|');
+        splt = [setName,pointName,pos,set_id,gpx_id] = $(ui.item[0]).attr('gpx_id').split('|');
         
-        updatePointOrderInGlobalGpx(setName); 
+        console.log("@@@ updateIndex",splt,e, ui);
+
+        updatePointOrderInGlobalGpx(set_id,pos); 
                 
         drawPath();
         
@@ -1986,7 +2047,8 @@ function gpxexec(proc)
 {
     $(proc).each(function(k,v){
         console.log ("@@ gpxexec", k,v );
-        eval(v+"()");
+        eval("(async () => {" + v + "()})()")
+//        eval(v+"()");
     }) ;  
 }
 

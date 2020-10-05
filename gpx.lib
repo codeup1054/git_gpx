@@ -34,7 +34,6 @@ $sql_create_gpx_set = "CREATE TABLE `gpx`.`gpx_set` (
 `user_id` INT NOT NULL , UNIQUE `set_id_unique` (`set_id`)) ENGINE = InnoDB;";
 
 
-
 // 2020-06-22 get strava auth from 
 
 
@@ -149,22 +148,34 @@ function jq_header()
 
 class gpxSQL extends MySQLi
 {
-    public function addGpxSetDB($set_name) // 2020-08-06 Добавление нового набора 
+    public function addGpxSetDB($set_data) // 2020-08-06 Добавление нового набора 
     {
-        
-        
-        
         $res = [];
         
+        $debug = 0;
+        
+        
+        if ($debug){
+            print "addGpxSetDB:<br />";
+            print_r($set_data);
+        }
+        
+        
+        $set_name = $set_data['name'];
+
         $sql = "update `gpx_set` set ord = ord+1;";
         
         if ($result = $this->query($sql)) {}
         else echo "***** Ошибка SQL $sql:\n (" . $this->errno . ") " . $this->error;
 
         $sql = "insert into `gpx_set` (set_name,ord) values ('".$set_name."',0)";
-
-        if ($result = $this->query($sql)) {}
-        else echo "***** Ошибка SQL $sql:\n (" . $this->errno . ") " . $this->error;
+        
+        if (!$debug)
+        {
+            if ($result = $this->query($sql)) {}
+            else echo "***** Ошибка SQL $sql:\n (" . $this->errno . ") " . $this->error;
+        }
+        else echo "Debug SQL:\n$sql \n";
 
 
 //        echo "@@ addGpxSetDB = ".print_r($sql,1);
@@ -183,6 +194,8 @@ class gpxSQL extends MySQLi
                 ('Дом', '','55.644784','37.496969','',)";
 */
         
+        
+        
         if ($result = $this->query("select max(set_id) as max from `gpx_set`"))
             while ($o = $result->fetch_object()) $set_id = $o->max;
         else echo "***** Ошибка SQL:\n (" . $this->errno . ") " . $this->error ."<br />";    
@@ -192,28 +205,26 @@ class gpxSQL extends MySQLi
             while ($o = $result->fetch_object()) $max_gpx_id = $o->max;
         else echo "***** Ошибка SQL:\n (" . $this->errno . ") " . $this->error ."<br />";    
         
+//        list($lat, $lng) = array('55.644784', '37.496969');
+//        list($lat2, $lng2) = array('55.647', '37.50');
+        list($lat, $lng) = $set_data['start'];
+        list($lat2, $lng2) = $set_data['end'];
+        
+        $max_gpx_id2 = $max_gpx_id+1;
 
-        
-        list($lat, $lng) = array('55.644784', '37.496969');
-        list($lat2, $lng2) = array('55.647', '37.50');
-        
-        $max_gpx_id2= $max_gpx_id+1;
-        
         $sql = "insert into `gpx_points` (name,ord,set_id,lat,lng) values 
-        ('$set_name $max_gpx_id' ,0,$set_id,$lat, $lng),
-        ('$set_name $max_gpx_id2',0,$set_id,$lat2,$lng2)";
-        
-        
-        if ( $result = $this->query($sql) )
-            {}
-        else  echo "***** Ошибка SQL:\n (" . $this->errno . ") " . $this->error;
-/**/        
-        
-//        return $this->getSetFromDB(); 
+        ('$set_name начало' ,0,$set_id,$lat, $lng),
+        ('$set_name конец',0,$set_id,$lat2,$lng2)";
+     
+        if (!$debug)
+        {
+            if ( $result = $this->query($sql) ) {}
+            else  echo "***** Ошибка SQL:\n (" . $this->errno . ") " . $this->error;
+        }
+        else print ("Debug SQL:\n$sql");
+
         return 1; 
     }
-
-    
     
     public function getSetFromDB($sets="7,19") // 2020-02-21
     {
@@ -265,7 +276,7 @@ class gpxSQL extends MySQLi
                                   <table set_info class=tab>
                                         <tr>
                                         <td width=30px ><span set_show_hide class='ui-icon ui-icon-triangle-1-s'></span></td>
-                                        <td width=400px set_name title = 'ID: $o->set_id \nord: $o->ord' ><b>$o->set_name</b> <a path_length></a></td>
+                                        <td width=400px title = 'ID: $o->set_id \nord: $o->ord' ><span set_id = '$o->set_id' contenteditable>$o->set_name</span> <a path_length></a></td>
                                         <td><select set_type = '$o->set_type' >$opt</select></td>
                                         <td set_cnt>$o->point_cnt</td>
                                         </tr>

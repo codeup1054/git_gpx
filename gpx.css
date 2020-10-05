@@ -50,6 +50,10 @@ br1, .color, .lat, .lng, .time, .color, .idx
 } 
 
 
+
+
+
+
 .baloon, .baloon input
 {
     font-size: 8px;
@@ -73,7 +77,12 @@ br1, .color, .lat, .lng, .time, .color, .idx
 .tab td {border:1px solid #fefefe; font-size: 11px;}
 .header td {font-weight:bold;}
 
-td[contenteditable] {background-color:#eeffee;}
+[contenteditable]       {background-color: rgba(217, 245, 255, 0.2)}
+[contenteditable]:hover {background-color: rgba(217, 245, 255, 0.5);}
+[contenteditable]:focus {outline: 1px solid rgba(170, 190, 200, 0.9); }
+
+
+
 td.geocoded {background-color:#ffee00;}
 
 .rowselect {
@@ -86,6 +95,16 @@ td.geocoded {background-color:#ffee00;}
     width: 100%; 
 }
 /*<!-- Left -->*/
+
+
+/*2020-10-05 set info editable input*/
+
+[set_id]
+{
+    font-size:16px;
+    padding: 0px 5px;
+}
+
  
 #map_container1 {position1: fixed;
                float:left;  
@@ -205,6 +224,16 @@ button.small
     background: rgba(255,255,255,1);
 }
 
+[set_info]
+{
+    background-color: whitesmoke;
+}
+
+
+.wp_panel /* таблица с точками*/
+{
+    border: solid 1px lightgray;
+}
 
 .datasets
 {
