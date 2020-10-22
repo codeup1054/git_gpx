@@ -14,7 +14,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript" src="/gpx/js/cookie/jquery.cookie.js"></script>
     <script src="/gpx/js/gpx.js"></script> 
-    <script type="text/javascript" src="/gpx/js/google_sheets_api.js"></script>
+<!--    <script type="text/javascript" src="/gpx/js/google_sheets_api.js"></script> -->
 
 
 <!--   bootstrap  -->    
@@ -37,8 +37,7 @@
 //      google.charts.setOnLoadCallback(drawChart);
     </script>
     
-    
-    <!-- Yandex.Metrika counter -->
+    <!-- Yandex.Metrika counter ->
     <script type="text/javascript" >
        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
        m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
@@ -158,7 +157,8 @@ function distance($lat1, $lon1, $lat2, $lon2, $unit) {
            <input type='checkbox'/>
     <div id="left_panel">
            <div>
-           <input id='newgpx' value="Новый набор"/> 
+           <input id='newgpx' value="Новый набор"/>
+                <select id='newGpxType'><option id=0>Путь</option><option id=1>Точки</option></select> 
                 <button class="ui-button ui-widget ui-corner-all small" onclick="makeApiCall('newGpxSet')">Новый набор</button>
            </div> 
            <div id="datasetpanel">

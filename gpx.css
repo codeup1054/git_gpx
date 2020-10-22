@@ -206,6 +206,25 @@ td.geocoded {background-color:#ffee00;}
     background: #aaa;
 }
 
+select option1 {
+  margin: 40px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+
+.option_1
+{
+    background-color:lightgreen;
+}
+
+.option_0
+{
+    background-color:rgba(150, 210, 255, 0.4);
+    color:black;
+}
+
 
 button.small
 {

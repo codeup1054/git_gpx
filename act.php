@@ -14,7 +14,7 @@ if (isset ($_REQUEST["new_gpx_set"]))
     $data =  $_REQUEST["new_gpx_set"];
     header('Content-Type: application/json');
     
-    print $gsql->addGpxSetDB($data); 
+    print $gsql->newGpxSetDB($data); 
     
     }
 
@@ -37,7 +37,7 @@ if (isset ($_REQUEST["save_db"]))
     {
     tm();
     $data =  $_REQUEST["save_db"];
-    $gsql->saveGlobGpxDB($data); 
+    $gsql->saveGlobGpxDB($data);
     print ( "\n<br />filesize=");
     tm('>>>');
     }
@@ -46,6 +46,7 @@ if (isset ($_REQUEST["save_sql"]))
     {
     tm();
     $data =  $_REQUEST["save_sql"];
+//    print_r ($data); 
     $gsql->saveGlobGpxDB($data); 
     print ( "\n<br />filesize=");
     tm('>>>');
@@ -57,6 +58,15 @@ if (isset ($_REQUEST["get_gpx_set_DB"]))    {
     print $gsql->getSetFromDB(); 
     
     }    
+
+if (isset ($_REQUEST["get_points_by_set_id_DB"]))    { 
+
+    $set_ids = $_REQUEST["get_points_by_set_DB"];
+    header('Content-Type: application/json');
+    print $gsql->$this->getPointFromDB($set_ids); 
+    }    
+
+
 
 if (isset ($_REQUEST["get_cache_stat"]))
     {   
